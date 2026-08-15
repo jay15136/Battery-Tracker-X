@@ -5,6 +5,7 @@ import 'package:battery_tracker/features/battery_types/application/battery_type_
 import 'package:battery_tracker/features/battery_types/data/drift_battery_type_repository.dart';
 import 'package:battery_tracker/features/battery_types/domain/battery_type.dart';
 import 'package:battery_tracker/features/battery_types/domain/battery_type_draft.dart';
+import 'package:battery_tracker/features/battery_types/domain/battery_type_repository.dart';
 import 'package:battery_tracker/features/icons/data/built_in_icon_registry.dart';
 import 'package:battery_tracker/features/icons/data/drift_icon_repository.dart';
 import 'package:battery_tracker/features/icons/domain/icon_color.dart';
@@ -187,6 +188,39 @@ void main() {
     expect(state.requireValue.visible.map((record) => record.typeName),
         ['AA NiMH']);
   });
+
+  test('retains the prior selection when a successful write cannot reload',
+      () async {
+    final original = await repository.create(validDraft());
+    final failingRepository = _PostWriteListFailingRepository(repository);
+    final failingContainer = ProviderContainer(
+      overrides: [
+        batteryTypeRepositoryProvider.overrideWithValue(failingRepository),
+      ],
+    );
+    addTearDown(failingContainer.dispose);
+    await failingContainer.read(batteryTypeCatalogProvider.future);
+    final controller =
+        failingContainer.read(batteryTypeCatalogProvider.notifier);
+    controller.select(original.id);
+
+    await expectLater(
+      controller.create(validDraft(typeName: 'New persisted type')),
+      throwsStateError,
+    );
+
+    final afterFailedRefresh =
+        failingContainer.read(batteryTypeCatalogProvider).requireValue;
+    expect(
+        afterFailedRefresh.records.map((record) => record.id), [original.id]);
+    expect(afterFailedRefresh.selectedId, original.id);
+
+    controller.setStatus(BatteryTypeStatusFilter.all);
+    expect(
+      failingContainer.read(batteryTypeCatalogProvider).requireValue.selectedId,
+      original.id,
+    );
+  });
 }
 
 BatteryTypeDraft validDraft({
@@ -221,4 +255,45 @@ final class _SequenceIdGenerator implements PermanentIdGenerator {
     _next++;
     return PermanentId.parse('90000000-0000-4000-8000-$tail');
   }
+}
+
+final class _PostWriteListFailingRepository implements BatteryTypeRepository {
+  _PostWriteListFailingRepository(this._delegate);
+
+  final BatteryTypeRepository _delegate;
+  var _failNextList = false;
+
+  @override
+  Future<BatteryTypeRecord> create(BatteryTypeDraft draft) async {
+    final created = await _delegate.create(draft);
+    _failNextList = true;
+    return created;
+  }
+
+  @override
+  Future<BatteryTypeRecord> deactivate(PermanentId id) =>
+      _delegate.deactivate(id);
+
+  @override
+  Future<BatteryTypeRecord> get(PermanentId id) => _delegate.get(id);
+
+  @override
+  Future<List<BatteryTypeRecord>> list({bool includeInactive = false}) {
+    if (_failNextList) {
+      _failNextList = false;
+      throw StateError('simulated post-write list failure');
+    }
+    return _delegate.list(includeInactive: includeInactive);
+  }
+
+  @override
+  Future<BatteryTypeRecord> reactivate(PermanentId id) =>
+      _delegate.reactivate(id);
+
+  @override
+  Future<BatteryTypeRecord> update(PermanentId id, BatteryTypeDraft draft) =>
+      _delegate.update(id, draft);
+
+  @override
+  Future<BatteryTypeUsage> usage(PermanentId id) => _delegate.usage(id);
 }

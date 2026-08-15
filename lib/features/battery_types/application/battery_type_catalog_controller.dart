@@ -73,8 +73,9 @@ final class BatteryTypeCatalogController
 
   Future<BatteryTypeRecord> create(BatteryTypeDraft draft) async {
     final created = await _repository.create(draft);
-    _selectedId = created.id;
     await refresh();
+    _selectedId = created.id;
+    _emit();
     return created;
   }
 
@@ -83,8 +84,9 @@ final class BatteryTypeCatalogController
     BatteryTypeDraft draft,
   ) async {
     final updated = await _repository.update(id, draft);
-    _selectedId = updated.id;
     await refresh();
+    _selectedId = updated.id;
+    _emit();
     return updated;
   }
 
