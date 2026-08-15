@@ -429,7 +429,9 @@ final class DriftIconRepository implements IconRepository {
         if (custom.isActive) {
           definition = custom.toDefinition();
         }
-      } on Object {
+      } on FormatException {
+        definition = null;
+      } on CustomIconNotFoundException {
         definition = null;
       }
     }

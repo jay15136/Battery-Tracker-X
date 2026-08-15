@@ -50,6 +50,22 @@ void main() {
     );
   });
 
+  test('propagates database failures while resolving a custom icon', () async {
+    await database.customStatement('DROP TABLE custom_icons');
+
+    await expectLater(
+      repository.validateSelection(
+        scopes: const {IconScope.battery},
+        selection: IconSelection(
+          source: IconSource.custom,
+          key: _id('20000000-0000-4000-8000-000000000099').value,
+          color: IconColor.blue,
+        ),
+      ),
+      throwsA(isA<SqliteException>()),
+    );
+  });
+
   test('custom category and icon metadata survive database restart', () async {
     await database.close();
     final directory = await Directory.systemTemp.createTemp(
