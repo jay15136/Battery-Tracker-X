@@ -29,9 +29,13 @@ class BatteryTypesPage extends ConsumerWidget {
         height: bodyHeight,
         child: catalog.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stackTrace) => _CatalogLoadError(
-            onRetry: () => ref.invalidate(batteryTypeCatalogProvider),
-          ),
+          error: (error, stackTrace) {
+            return _CatalogLoadError(
+              error: error,
+              stackTrace: stackTrace,
+              onRetry: () => ref.invalidate(batteryTypeCatalogProvider),
+            );
+          },
           data: (snapshot) => Column(
             children: [
               _Toolbar(snapshot: snapshot),
@@ -409,7 +413,11 @@ class _BatteryTypeDetails extends ConsumerWidget {
             const _DetailHeading('Inventory usage'),
             usage.when(
               loading: () => const LinearProgressIndicator(),
-              error: (_, __) => const Text('Usage counts are unavailable.'),
+              error: (error, stackTrace) => _LoggedFailure(
+                error: error,
+                stackTrace: stackTrace,
+                child: const Text('Usage counts are unavailable.'),
+              ),
               data: (value) => Text(_usageSentence(value)),
             ),
             const SizedBox(height: 18),
@@ -516,28 +524,73 @@ class _EmptyCatalog extends StatelessWidget {
 }
 
 class _CatalogLoadError extends StatelessWidget {
-  const _CatalogLoadError({required this.onRetry});
+  const _CatalogLoadError({
+    required this.error,
+    required this.stackTrace,
+    required this.onRetry,
+  });
 
+  final Object error;
+  final StackTrace stackTrace;
   final VoidCallback onRetry;
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 36),
-            const SizedBox(height: 10),
-            Text(
-              'Battery Types could not be loaded.',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 4),
-            const Text('Try again.'),
-            const SizedBox(height: 12),
-            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
-          ],
+  Widget build(BuildContext context) => _LoggedFailure(
+        error: error,
+        stackTrace: stackTrace,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 36),
+              const SizedBox(height: 10),
+              Text(
+                'Battery Types could not be loaded.',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              const Text('Try again.'),
+              const SizedBox(height: 12),
+              OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+            ],
+          ),
         ),
       );
+}
+
+class _LoggedFailure extends ConsumerStatefulWidget {
+  const _LoggedFailure({
+    required this.error,
+    required this.stackTrace,
+    required this.child,
+  });
+
+  final Object error;
+  final StackTrace stackTrace;
+  final Widget child;
+
+  @override
+  ConsumerState<_LoggedFailure> createState() => _LoggedFailureState();
+}
+
+class _LoggedFailureState extends ConsumerState<_LoggedFailure> {
+  @override
+  void initState() {
+    super.initState();
+    _logFailure(ref, widget.error, widget.stackTrace);
+  }
+
+  @override
+  void didUpdateWidget(covariant _LoggedFailure oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.error, oldWidget.error) ||
+        !identical(widget.stackTrace, oldWidget.stackTrace)) {
+      _logFailure(ref, widget.error, widget.stackTrace);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 Future<void> _addBatteryType(BuildContext context, WidgetRef ref) async {

@@ -6,6 +6,7 @@ import '../../../core/identity/permanent_id.dart';
 import '../../icons/data/built_in_icon_registry.dart';
 import '../../icons/domain/icon_definition.dart';
 import '../../icons/domain/icon_registry.dart';
+import '../../icons/domain/icon_repository.dart';
 import '../../icons/domain/icon_selection.dart';
 import '../../icons/presentation/icon_visual.dart';
 
@@ -99,7 +100,16 @@ class _BatteryTypeIconState extends ConsumerState<BatteryTypeIcon> {
         builtIns: BuiltInIconRegistry.definitions,
         customIcons: [custom.toDefinition()],
       ).resolve(scope: IconScope.battery, selection: selection).definition;
-    } on Object {
+    } on FormatException {
+      return fallback;
+    } on CustomIconNotFoundException {
+      return fallback;
+    } on Object catch (error, stackTrace) {
+      ref.read(appLogServiceProvider).logger('battery_types.ui').severe(
+            'Battery Type operation failed.',
+            error,
+            stackTrace,
+          );
       return fallback;
     }
   }

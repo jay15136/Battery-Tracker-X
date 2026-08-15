@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:battery_tracker/app/app_providers.dart';
@@ -7,6 +8,7 @@ import 'package:battery_tracker/core/logging/app_log_service.dart';
 import 'package:battery_tracker/features/battery_types/data/drift_battery_type_repository.dart';
 import 'package:battery_tracker/features/battery_types/domain/battery_type.dart';
 import 'package:battery_tracker/features/battery_types/domain/battery_type_draft.dart';
+import 'package:battery_tracker/features/battery_types/domain/battery_type_repository.dart';
 import 'package:battery_tracker/features/battery_types/presentation/battery_types_page.dart';
 import 'package:battery_tracker/features/icons/data/built_in_icon_registry.dart';
 import 'package:battery_tracker/features/icons/data/drift_icon_repository.dart';
@@ -234,6 +236,63 @@ void main() {
     expect(find.textContaining('Exception'), findsNothing);
   });
 
+  testWidgets('catalog load failure logs once and shows concise retry UI',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    await database.customStatement(
+      'ALTER TABLE battery_types RENAME TO unavailable_battery_types',
+    );
+
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: repository,
+      logs: logs,
+    );
+
+    expect(find.text('Battery Types could not be loaded.'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Retry'), findsOneWidget);
+    expect(find.textContaining('SqliteException'), findsNothing);
+    expect(logs.severeRecords, hasLength(1));
+    expect(logs.scopes, ['battery_types.ui']);
+    expect(logs.severeRecords.single.message, 'Battery Type operation failed.');
+    expect(logs.severeRecords.single.error, isNotNull);
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(logs.severeRecords, hasLength(1));
+  });
+
+  testWidgets('usage failure logs once and shows concise unavailable UI',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    await repository.create(_draft(typeName: 'AA NiMH'));
+    await database.customStatement(
+      'ALTER TABLE batteries RENAME TO unavailable_batteries',
+    );
+
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: repository,
+      logs: logs,
+    );
+
+    expect(find.text('Usage counts are unavailable.'), findsOneWidget);
+    expect(find.textContaining('SqliteException'), findsNothing);
+    expect(logs.severeRecords, hasLength(1));
+    expect(logs.scopes, ['battery_types.ui']);
+    expect(logs.severeRecords.single.message, 'Battery Type operation failed.');
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(logs.severeRecords, hasLength(1));
+  });
+
   for (final brightness in [Brightness.light, Brightness.dark]) {
     testWidgets('is bounded and overflow-free in ${brightness.name} mode',
         (tester) async {
@@ -263,7 +322,8 @@ Future<void> _pumpPage(
   WidgetTester tester, {
   required Directory root,
   required DriftIconRepository icons,
-  required DriftBatteryTypeRepository repository,
+  required BatteryTypeRepository repository,
+  _LogService? logs,
   Size size = const Size(1280, 800),
   Brightness brightness = Brightness.light,
 }) async {
@@ -277,7 +337,7 @@ Future<void> _pumpPage(
         applicationSupportRootProvider.overrideWithValue(root.uri),
         iconRepositoryProvider.overrideWithValue(icons),
         batteryTypeRepositoryProvider.overrideWithValue(repository),
-        appLogServiceProvider.overrideWithValue(_LogService()),
+        appLogServiceProvider.overrideWithValue(logs ?? _LogService()),
       ],
       child: MaterialApp(
         theme: ThemeData(brightness: brightness, useMaterial3: true),
@@ -361,14 +421,30 @@ Future<({int? battery, int? batterySet, int? device})> _referencedRowIds(
 }
 
 final class _LogService implements AppLogService {
+  _LogService() {
+    _subscription = _logger.onRecord.listen(records.add);
+  }
+
+  final Logger _logger = Logger.detached('test.battery_types.ui')
+    ..level = Level.ALL;
+  final List<LogRecord> records = [];
+  final List<String> scopes = [];
+  late final StreamSubscription<LogRecord> _subscription;
+
+  List<LogRecord> get severeRecords =>
+      records.where((record) => record.level == Level.SEVERE).toList();
+
   @override
-  Future<void> close() async {}
+  Future<void> close() => _subscription.cancel();
 
   @override
   Future<void> initialize() async {}
 
   @override
-  Logger logger(String scope) => Logger('test.$scope');
+  Logger logger(String scope) {
+    scopes.add(scope);
+    return _logger;
+  }
 }
 
 final class _Ids implements PermanentIdGenerator {
