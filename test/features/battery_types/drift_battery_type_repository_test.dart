@@ -175,11 +175,19 @@ void main() {
     expect(usage.batterySets, 1);
     expect(usage.devices, 1);
 
+    final originalReferenceIds = await referencedBatteryTypeRowIds(database);
+    final expectedTypeRowId = await batteryTypeRowId(database, type.id);
+    expect(originalReferenceIds.battery, expectedTypeRowId);
+    expect(originalReferenceIds.batterySet, expectedTypeRowId);
+    expect(originalReferenceIds.device, expectedTypeRowId);
+
     final inactive = await repository.deactivate(type.id);
 
     expect(inactive.isActive, isFalse);
-    expect(
-        await referencedBatteryTypeRowIds(database), everyElement(isNotNull));
+    final preservedReferenceIds = await referencedBatteryTypeRowIds(database);
+    expect(preservedReferenceIds.battery, originalReferenceIds.battery);
+    expect(preservedReferenceIds.batterySet, originalReferenceIds.batterySet);
+    expect(preservedReferenceIds.device, originalReferenceIds.device);
     expect(await repository.list(), isEmpty);
     expect(await repository.list(includeInactive: true), hasLength(1));
   });
@@ -382,11 +390,19 @@ void main() {
     expect(reopened.id, created.id);
     expect(reopened.id, updated.id);
     expect(reopened.typeName, '18650 Li-ion');
+    expect(reopened.description, 'Rechargeable AA cells');
     expect(reopened.chemistry, 'Lithium-ion custom');
     expect(reopened.defaultVoltage, 3.7);
     expect(reopened.defaultCapacity, 12000);
     expect(reopened.capacityUnit, 'mWh');
+    expect(reopened.physicalSize, 'AA');
+    expect(reopened.suggestedIcon.source, IconSource.builtin);
+    expect(reopened.suggestedIcon.key, 'battery_18650');
     expect(reopened.suggestedIcon.color, IconColor.purple);
+    expect(reopened.notes, 'Standard issue');
+    expect(reopened.createdAt, created.createdAt);
+    expect(reopened.modifiedAt, updated.modifiedAt);
+    expect(reopened.deactivatedAt, isNull);
   });
 }
 
@@ -464,15 +480,23 @@ Future<void> seedBatterySetAndDeviceReferences(
       );
 }
 
-Future<List<int?>> referencedBatteryTypeRowIds(AppDatabase database) async {
+Future<int> batteryTypeRowId(AppDatabase database, PermanentId typeId) async {
+  final type = await (database.select(database.batteryTypes)
+        ..where((table) => table.uuid.equals(typeId.value)))
+      .getSingle();
+  return type.id;
+}
+
+Future<({int? battery, int? batterySet, int? device})>
+    referencedBatteryTypeRowIds(AppDatabase database) async {
   final batteries = await database.select(database.batteries).get();
   final batterySets = await database.select(database.batterySets).get();
   final devices = await database.select(database.devices).get();
-  return [
-    ...batteries.map((battery) => battery.batteryTypeId),
-    ...batterySets.map((batterySet) => batterySet.batteryTypeId),
-    ...devices.map((device) => device.requiredBatteryTypeId),
-  ];
+  return (
+    battery: batteries.single.batteryTypeId,
+    batterySet: batterySets.single.batteryTypeId,
+    device: devices.single.requiredBatteryTypeId,
+  );
 }
 
 final class _SteppingClock {
