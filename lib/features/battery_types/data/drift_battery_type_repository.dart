@@ -13,7 +13,7 @@ import '../domain/battery_type.dart';
 import '../domain/battery_type_draft.dart';
 import '../domain/battery_type_repository.dart';
 
-final class DriftBatteryTypeRepository {
+final class DriftBatteryTypeRepository implements BatteryTypeRepository {
   DriftBatteryTypeRepository({
     required this.database,
     required this.idGenerator,
@@ -26,6 +26,7 @@ final class DriftBatteryTypeRepository {
   final IconRepository iconRepository;
   final DateTime Function() _clock;
 
+  @override
   Future<List<BatteryTypeRecord>> list({bool includeInactive = false}) async {
     final query = database.select(database.batteryTypes);
     if (!includeInactive) {
@@ -37,6 +38,7 @@ final class DriftBatteryTypeRepository {
     return (await query.get()).map(_mapRecord).toList(growable: false);
   }
 
+  @override
   Future<BatteryTypeRecord> get(PermanentId id) async {
     final row = await _rowById(id);
     if (row == null) {
@@ -45,6 +47,7 @@ final class DriftBatteryTypeRepository {
     return _mapRecord(row);
   }
 
+  @override
   Future<BatteryTypeRecord> create(BatteryTypeDraft draft) async {
     try {
       return await database.transaction(() async {
@@ -86,6 +89,7 @@ final class DriftBatteryTypeRepository {
     }
   }
 
+  @override
   Future<BatteryTypeRecord> update(
     PermanentId id,
     BatteryTypeDraft draft,
@@ -138,6 +142,115 @@ final class DriftBatteryTypeRepository {
     }
   }
 
+  @override
+  Future<BatteryTypeUsage> usage(PermanentId id) async {
+    await get(id);
+    return _usageForExistingType(id);
+  }
+
+  @override
+  Future<BatteryTypeRecord> deactivate(PermanentId id) {
+    return database.transaction(() async {
+      final current = await _rowById(id);
+      if (current == null) {
+        throw BatteryTypeNotFoundException(id);
+      }
+      if (current.deactivatedAt != null) {
+        throw BatteryTypeStateConflictException(
+          id,
+          'Battery Type is already inactive.',
+        );
+      }
+
+      final counts = await _usageForExistingType(id);
+      final now = _clock();
+      final changed = await (database.update(database.batteryTypes)
+            ..where(
+              (table) =>
+                  table.uuid.equals(id.value) & table.deactivatedAt.isNull(),
+            ))
+          .write(
+        BatteryTypesCompanion(
+          deactivatedAt: Value(now),
+          modifiedAt: Value(now),
+        ),
+      );
+      if (changed != 1) {
+        throw BatteryTypeStateConflictException(
+          id,
+          'Battery Type is no longer active.',
+        );
+      }
+      await _recordActivity(
+        'battery_type_deactivated',
+        id,
+        metadata: {
+          'batteries': counts.batteries,
+          'battery_sets': counts.batterySets,
+          'devices': counts.devices,
+        },
+      );
+      return get(id);
+    });
+  }
+
+  @override
+  Future<BatteryTypeRecord> reactivate(PermanentId id) async {
+    try {
+      return await database.transaction(() async {
+        final current = await _rowById(id);
+        if (current == null) {
+          throw BatteryTypeNotFoundException(id);
+        }
+        if (current.deactivatedAt == null) {
+          throw BatteryTypeStateConflictException(
+            id,
+            'Battery Type is already active.',
+          );
+        }
+        try {
+          await _ensureActiveNameAvailable(current.typeName);
+        } on BatteryTypeNameConflictException {
+          throw BatteryTypeReactivationConflictException(
+            id: id,
+            name: current.typeName,
+          );
+        }
+
+        final now = _clock();
+        final changed = await (database.update(database.batteryTypes)
+              ..where(
+                (table) =>
+                    table.uuid.equals(id.value) &
+                    table.deactivatedAt.isNotNull(),
+              ))
+            .write(
+          BatteryTypesCompanion(
+            deactivatedAt: const Value(null),
+            modifiedAt: Value(now),
+          ),
+        );
+        if (changed != 1) {
+          throw BatteryTypeStateConflictException(
+            id,
+            'Battery Type is no longer inactive.',
+          );
+        }
+        await _recordActivity('battery_type_reactivated', id);
+        return get(id);
+      });
+    } on SqliteException catch (error) {
+      if (_isActiveNameUniqueViolation(error)) {
+        final current = await _rowById(id);
+        throw BatteryTypeReactivationConflictException(
+          id: id,
+          name: current?.typeName ?? '',
+        );
+      }
+      rethrow;
+    }
+  }
+
   Future<BatteryType?> _rowById(PermanentId id) {
     return (database.select(database.batteryTypes)
           ..where((table) => table.uuid.equals(id.value)))
@@ -162,6 +275,44 @@ final class DriftBatteryTypeRepository {
     }
   }
 
+  Future<BatteryTypeUsage> _usageForExistingType(PermanentId id) async {
+    final batteries = await _referenceCount(
+      table: 'batteries',
+      column: 'battery_type_id',
+      id: id,
+    );
+    final batterySets = await _referenceCount(
+      table: 'battery_sets',
+      column: 'battery_type_id',
+      id: id,
+    );
+    final devices = await _referenceCount(
+      table: 'devices',
+      column: 'required_battery_type_id',
+      id: id,
+    );
+    return BatteryTypeUsage(
+      batteries: batteries,
+      batterySets: batterySets,
+      devices: devices,
+    );
+  }
+
+  Future<int> _referenceCount({
+    required String table,
+    required String column,
+    required PermanentId id,
+  }) async {
+    final row = await database.customSelect(
+      'SELECT COUNT(*) AS usage_count FROM $table '
+      'WHERE $column = ('
+      'SELECT id FROM battery_types WHERE uuid = ?'
+      ')',
+      variables: [Variable.withString(id.value)],
+    ).getSingle();
+    return row.read<int>('usage_count');
+  }
+
   BatteryTypeRecord _mapRecord(BatteryType row) => BatteryTypeRecord(
         id: PermanentId.parse(row.uuid),
         typeName: row.typeName,
@@ -182,17 +333,19 @@ final class DriftBatteryTypeRepository {
         deactivatedAt: row.deactivatedAt,
       );
 
-  Future<void> _recordActivity(String eventType, PermanentId id) {
+  Future<void> _recordActivity(
+    String eventType,
+    PermanentId id, {
+    Map<String, Object?> metadata = const {},
+  }) {
     return database.into(database.activityLog).insert(
           ActivityLogCompanion.insert(
             uuid: idGenerator.next().value,
             eventType: eventType,
             entityType: 'battery_type',
             entityUuid: id.value,
-            summary: eventType == 'battery_type_created'
-                ? 'Battery Type created.'
-                : 'Battery Type updated.',
-            metadataJson: Value(jsonEncode(const <String, Object?>{})),
+            summary: _activitySummary(eventType),
+            metadataJson: Value(jsonEncode(metadata)),
             occurredAt: Value(_clock()),
           ),
         );
@@ -200,4 +353,18 @@ final class DriftBatteryTypeRepository {
 
   bool _isActiveNameUniqueViolation(SqliteException error) =>
       error.message.contains('battery_types_active_name_uq');
+
+  String _activitySummary(String eventType) {
+    switch (eventType) {
+      case 'battery_type_created':
+        return 'Battery Type created.';
+      case 'battery_type_updated':
+        return 'Battery Type updated.';
+      case 'battery_type_deactivated':
+        return 'Battery Type deactivated.';
+      case 'battery_type_reactivated':
+        return 'Battery Type reactivated.';
+    }
+    throw ArgumentError.value(eventType, 'eventType', 'Unsupported activity.');
+  }
 }

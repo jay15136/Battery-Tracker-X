@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:battery_tracker/core/database/app_database.dart';
 import 'package:battery_tracker/core/identity/permanent_id.dart';
 import 'package:battery_tracker/core/storage/managed_relative_path.dart';
@@ -11,7 +14,7 @@ import 'package:battery_tracker/features/icons/domain/icon_definition.dart';
 import 'package:battery_tracker/features/icons/domain/icon_registry.dart';
 import 'package:battery_tracker/features/icons/domain/icon_repository.dart';
 import 'package:battery_tracker/features/icons/domain/icon_selection.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -161,19 +164,247 @@ void main() {
       throwsA(isA<BatteryTypeNameConflictException>()),
     );
   });
+
+  test('deactivation preserves all references and reports exact usage',
+      () async {
+    final type = await repository.create(validDraft());
+    await seedBatterySetAndDeviceReferences(database, type.id);
+
+    final usage = await repository.usage(type.id);
+    expect(usage.batteries, 1);
+    expect(usage.batterySets, 1);
+    expect(usage.devices, 1);
+
+    final inactive = await repository.deactivate(type.id);
+
+    expect(inactive.isActive, isFalse);
+    expect(
+        await referencedBatteryTypeRowIds(database), everyElement(isNotNull));
+    expect(await repository.list(), isEmpty);
+    expect(await repository.list(includeInactive: true), hasLength(1));
+  });
+
+  test('allows an inactive name to be reused by a new active type', () async {
+    final original = await repository.create(validDraft());
+    await repository.deactivate(original.id);
+
+    final replacement = await repository.create(validDraft());
+
+    expect(replacement.id, isNot(original.id));
+    expect(replacement.typeName, 'AA NiMH');
+  });
+
+  test(
+      'rejects reactivation when its inactive name now belongs to an active type',
+      () async {
+    final original = await repository.create(validDraft());
+    await repository.deactivate(original.id);
+    await repository.create(validDraft());
+
+    await expectLater(
+      repository.reactivate(original.id),
+      throwsA(
+        isA<BatteryTypeReactivationConflictException>().having(
+          (error) => error.id,
+          'id',
+          original.id,
+        ),
+      ),
+    );
+  });
+
+  test('reactivates an inactive type and restores it to the active list',
+      () async {
+    final type = await repository.create(validDraft());
+    await repository.deactivate(type.id);
+
+    final reactivated = await repository.reactivate(type.id);
+
+    expect(reactivated.id, type.id);
+    expect(reactivated.isActive, isTrue);
+    expect((await repository.list()).single.id, type.id);
+  });
+
+  test(
+      'edits an inactive type without claiming an active name until reactivated',
+      () async {
+    final inactive = await repository.create(validDraft(typeName: 'AA NiMH'));
+    await repository.deactivate(inactive.id);
+    await repository.create(validDraft(typeName: 'AAA NiMH'));
+
+    final edited = await repository.update(
+      inactive.id,
+      validDraft(typeName: 'AAA NiMH'),
+    );
+
+    expect(edited.typeName, 'AAA NiMH');
+    expect(edited.isActive, isFalse);
+    await expectLater(
+      repository.reactivate(inactive.id),
+      throwsA(isA<BatteryTypeReactivationConflictException>()),
+    );
+  });
+
+  test('rejects repeated lifecycle actions with typed stale-state errors',
+      () async {
+    final type = await repository.create(validDraft());
+    await repository.deactivate(type.id);
+
+    await expectLater(
+      repository.deactivate(type.id),
+      throwsA(isA<BatteryTypeStateConflictException>()),
+    );
+    await repository.reactivate(type.id);
+    await expectLater(
+      repository.reactivate(type.id),
+      throwsA(isA<BatteryTypeStateConflictException>()),
+    );
+  });
+
+  test('reports missing UUIDs through the typed not-found error', () async {
+    final missing = PermanentId.parse('11111111-1111-4111-8111-111111111111');
+
+    for (final operation in [
+      repository.usage(missing),
+      repository.deactivate(missing),
+      repository.reactivate(missing),
+    ]) {
+      await expectLater(
+        operation,
+        throwsA(isA<BatteryTypeNotFoundException>()),
+      );
+    }
+  });
+
+  test('rolls back deactivation when its activity record cannot be persisted',
+      () async {
+    final type = await repository.create(validDraft());
+    await database.customStatement('''
+      CREATE TRIGGER fail_battery_type_activity
+      BEFORE INSERT ON activity_log
+      WHEN NEW.event_type = 'battery_type_deactivated'
+      BEGIN
+        SELECT RAISE(ABORT, 'simulated activity failure');
+      END;
+    ''');
+
+    await expectLater(repository.deactivate(type.id), throwsA(isA<Object>()));
+
+    final current = await repository.get(type.id);
+    expect(current.isActive, isTrue);
+    expect(current.deactivatedAt, isNull);
+  });
+
+  test('records lifecycle activity with the type UUID and usage metadata',
+      () async {
+    final type = await repository.create(validDraft());
+    await seedBatterySetAndDeviceReferences(database, type.id);
+
+    await repository.deactivate(type.id);
+    await repository.reactivate(type.id);
+
+    final activity = await (database.select(database.activityLog)
+          ..where((table) => table.entityUuid.equals(type.id.value)))
+        .get();
+    final deactivated = activity.singleWhere(
+      (entry) => entry.eventType == 'battery_type_deactivated',
+    );
+
+    expect(
+      activity.map((entry) => entry.eventType),
+      containsAll(['battery_type_deactivated', 'battery_type_reactivated']),
+    );
+    expect(deactivated.entityType, 'battery_type');
+    expect(deactivated.entityUuid, type.id.value);
+    expect(
+      jsonDecode(deactivated.metadataJson),
+      {'batteries': 1, 'battery_sets': 1, 'devices': 1},
+    );
+  });
+
+  test(
+      'persists updated Battery Type fields and UUID after a file-backed restart',
+      () async {
+    final originalWarningSetting =
+        driftRuntimeOptions.dontWarnAboutMultipleDatabases;
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    addTearDown(() {
+      driftRuntimeOptions.dontWarnAboutMultipleDatabases =
+          originalWarningSetting;
+    });
+    final root = await Directory.systemTemp.createTemp('battery-type-restart-');
+    final databaseFile =
+        File.fromUri(root.uri.resolve('battery_tracker.sqlite'));
+    addTearDown(() async {
+      if (root.existsSync()) {
+        await root.delete(recursive: true);
+      }
+    });
+
+    final firstDatabase = AppDatabase.forTesting(NativeDatabase(databaseFile));
+    await firstDatabase.customSelect('SELECT 1').getSingle();
+    final firstRepository = createRepository(firstDatabase);
+    final created = await firstRepository.create(
+      validDraft(
+        typeName: '18650 Li-ion',
+        chemistry: 'Li-ion',
+        capacityUnit: 'mWh',
+        suggestedIcon: const IconSelection(
+          source: IconSource.builtin,
+          key: 'battery_18650',
+          color: IconColor.orange,
+        ),
+      ),
+    );
+    final updated = await firstRepository.update(
+      created.id,
+      validDraft(
+        typeName: '18650 Li-ion',
+        chemistry: 'Lithium-ion custom',
+        defaultVoltage: 3.7,
+        defaultCapacity: 12000,
+        capacityUnit: 'mWh',
+        suggestedIcon: const IconSelection(
+          source: IconSource.builtin,
+          key: 'battery_18650',
+          color: IconColor.purple,
+        ),
+      ),
+    );
+    await firstDatabase.close();
+
+    final reopenedDatabase =
+        AppDatabase.forTesting(NativeDatabase(databaseFile));
+    await reopenedDatabase.customSelect('SELECT 1').getSingle();
+    addTearDown(reopenedDatabase.close);
+    final reopened = await createRepository(reopenedDatabase).get(created.id);
+
+    expect(reopened.id, created.id);
+    expect(reopened.id, updated.id);
+    expect(reopened.typeName, '18650 Li-ion');
+    expect(reopened.chemistry, 'Lithium-ion custom');
+    expect(reopened.defaultVoltage, 3.7);
+    expect(reopened.defaultCapacity, 12000);
+    expect(reopened.capacityUnit, 'mWh');
+    expect(reopened.suggestedIcon.color, IconColor.purple);
+  });
 }
 
 BatteryTypeDraft validDraft({
   String typeName = 'AA NiMH',
+  String chemistry = 'NiMH',
+  double defaultVoltage = 1.2,
+  double defaultCapacity = 2500,
+  String capacityUnit = 'mAh',
   IconSelection? suggestedIcon,
 }) {
   return BatteryTypeDraft(
     typeName: typeName,
     description: 'Rechargeable AA cells',
-    chemistry: 'NiMH',
-    defaultVoltage: 1.2,
-    defaultCapacity: 2500,
-    capacityUnit: 'mAh',
+    chemistry: chemistry,
+    defaultVoltage: defaultVoltage,
+    defaultCapacity: defaultCapacity,
+    capacityUnit: capacityUnit,
     physicalSize: 'AA',
     notes: 'Standard issue',
     suggestedIcon: suggestedIcon ??
@@ -183,6 +414,65 @@ BatteryTypeDraft validDraft({
           color: IconColor.green,
         ),
   );
+}
+
+DriftBatteryTypeRepository createRepository(AppDatabase database) {
+  final idGenerator = _SequenceIdGenerator();
+  final clock = _SteppingClock();
+  final iconRepository = DriftIconRepository(
+    database: database,
+    idGenerator: idGenerator,
+    builtInRegistry: IconRegistry(builtIns: BuiltInIconRegistry.definitions),
+    clock: clock.call,
+  );
+  return DriftBatteryTypeRepository(
+    database: database,
+    idGenerator: idGenerator,
+    iconRepository: iconRepository,
+    clock: clock.call,
+  );
+}
+
+Future<void> seedBatterySetAndDeviceReferences(
+  AppDatabase database,
+  PermanentId typeId,
+) async {
+  final type = await (database.select(database.batteryTypes)
+        ..where((table) => table.uuid.equals(typeId.value)))
+      .getSingle();
+  await database.into(database.batteries).insert(
+        BatteriesCompanion.insert(
+          uuid: '70000000-0000-4000-8000-000000000001',
+          userBatteryId: 'AA-001',
+          batteryTypeId: Value(type.id),
+        ),
+      );
+  await database.into(database.batterySets).insert(
+        BatterySetsCompanion.insert(
+          uuid: '70000000-0000-4000-8000-000000000002',
+          userSetId: 'SET-001',
+          name: 'AA set',
+          batteryTypeId: Value(type.id),
+        ),
+      );
+  await database.into(database.devices).insert(
+        DevicesCompanion.insert(
+          uuid: '70000000-0000-4000-8000-000000000003',
+          name: 'Radio',
+          requiredBatteryTypeId: Value(type.id),
+        ),
+      );
+}
+
+Future<List<int?>> referencedBatteryTypeRowIds(AppDatabase database) async {
+  final batteries = await database.select(database.batteries).get();
+  final batterySets = await database.select(database.batterySets).get();
+  final devices = await database.select(database.devices).get();
+  return [
+    ...batteries.map((battery) => battery.batteryTypeId),
+    ...batterySets.map((batterySet) => batterySet.batteryTypeId),
+    ...devices.map((device) => device.requiredBatteryTypeId),
+  ];
 }
 
 final class _SteppingClock {
