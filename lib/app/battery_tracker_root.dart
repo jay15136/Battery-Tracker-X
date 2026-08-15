@@ -32,6 +32,18 @@ class _BatteryTrackerRootState extends State<BatteryTrackerRoot> {
         appSettingsRepositoryProvider.overrideWithValue(
           dependencies.settingsRepository,
         ),
+        applicationSupportRootProvider.overrideWithValue(
+          dependencies.applicationSupportRoot,
+        ),
+        iconRepositoryProvider.overrideWithValue(
+          dependencies.iconRepository,
+        ),
+        iconLibraryServiceProvider.overrideWithValue(
+          dependencies.iconLibraryService,
+        ),
+        fileSelectionServiceProvider.overrideWithValue(
+          dependencies.fileSelectionService,
+        ),
       ],
       child: const BatteryTrackerApp(),
     );

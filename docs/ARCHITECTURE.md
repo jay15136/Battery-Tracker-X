@@ -1,6 +1,6 @@
 # Battery Tracker — Architecture Guide
 
-**Architecture baseline:** Phase 2 foundation, 2026-08-15
+**Architecture baseline:** Phase 3 icon system, 2026-08-15
 **Initial runtime:** Windows 11 desktop  
 **Portability targets:** Android, iPhone/iPad, and macOS
 
@@ -118,6 +118,16 @@ SQLite stores `ManagedRelativePath` values with forward slashes. They reject dri
 
 Imported files are validated, copied to managed storage, and then committed to the database. Failed database writes remove only newly staged files. Missing photo files are logged and rendered with the record's icon. Custom-icon deletion requires a reference check and an explicit replacement/default strategy.
 
+## Icon system
+
+`IconRegistry` is the centralized, platform-neutral catalog. It combines 54 immutable packaged `IconDefinition` values with active custom-icon records, searches display names/keys/categories/keywords, enforces owner scope, resolves deprecated keys, and supplies distinct Battery, Battery Set, and Device defaults. Built-in assets live under `assets/icons/builtin/`; logical keys, not asset paths, are persisted on inventory owners.
+
+Custom icons have permanent UUIDs. `DriftIconRepository` persists categories and metadata, records recent selections and activity, counts live references across Batteries, Battery Sets, Devices, and Battery Types, and replaces those references in one SQLite transaction before deactivation. Custom files live at `custom_icons/{icon-uuid}/source-{revision-uuid}.{png|svg}`. Replacing source content preserves the icon UUID and removes the superseded managed file only after the database update succeeds.
+
+`LocalCustomIconStorage` validates signatures, file type, size, UTF-8 SVG structure, and rejects scripts, event handlers, entity/doctype declarations, image elements, and external/data references. `IconVisual` renders packaged and managed SVG/PNG sources with optional color tint and always falls back to the owner default when a managed file is missing or unreadable.
+
+Riverpod's `IconCatalogController` exposes scoped Built-In, Custom, Recent, category, and text filters to both the reusable `IconPickerDialog` and Settings `IconLibraryPage`. `FileSelectionService` returns only platform-neutral file URIs; `FileSelectorFileSelectionService` is the replaceable native-dialog adapter. Feature/domain layers never import plugin types or Windows APIs.
+
 ## Navigation
 
 Keep the current Material 3 `NavigationRail` shell and typed `AppDestination` values for:
@@ -190,8 +200,8 @@ Foundation packages are added now; later-phase packages are revalidated when add
 | UUID | `uuid` | Added in Phase 1 behind `PermanentIdGenerator`. |
 | App directories | `path_provider` | Added in Phase 1 behind `AppDataDirectoryService`. |
 | Logging | `logging` | Added in Phase 1 behind a project service. |
-| Native file dialogs | `file_selector` | Add in photo/icon/import/export phases; maintained federated Flutter plugin. |
-| SVG | `flutter_svg` | Add in Icon System phase for validated local SVG display. |
+| Native file dialogs | `file_selector` | Added in Phase 3 behind `FileSelectionService`; maintained federated Flutter plugin with Windows/mobile/macOS implementations. |
+| SVG | `flutter_svg` | Added in Phase 3 for packaged and validated managed SVG display with icon fallback. |
 | Drag/drop | `desktop_drop` | Add in Photos phase; optional UI path, never required for record creation. |
 | Camera | `camera` plus a tested Windows adapter | Add in Photos phase after a Windows capture spike; `CameraService` isolates adapter limitations. |
 | QR render/decode | `qr_flutter` and pure-Dart `zxing2` | Add in QR phase; mobile live scanning may use `mobile_scanner`, which does not support Windows. |

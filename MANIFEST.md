@@ -30,9 +30,11 @@ Generated files should be updated through Flutter tooling and reviewed as normal
 - `lib/app/` — application shell, typed destinations, and navigation
 - `lib/core/` — identity, database contracts, storage values, theme, logging, and utilities
 - `lib/features/` — feature-first modules for all Version 1 capabilities
+- `assets/icons/builtin/` — immutable packaged SVG catalog used by the centralized icon registry
 - `lib/services/` — platform and cross-cutting service contracts/adapters
 - `drift_schemas/` — immutable Drift schema snapshots used for migration review and tests
 - `test/` — unit, repository, migration, and widget tests
 - `scripts/` — repeatable bootstrap and verification commands
+- `docs/superpowers/specs/` and `docs/superpowers/plans/` — reviewed feature designs and executable implementation records
 
 Build output, local databases, logs, photographs, imported custom icons, and user backups are not source artifacts and must remain ignored.

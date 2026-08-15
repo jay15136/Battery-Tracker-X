@@ -12,6 +12,7 @@ coverage/
 
 # IDEs
 .idea/
+.vs/
 *.iml
 *.ipr
 *.iws

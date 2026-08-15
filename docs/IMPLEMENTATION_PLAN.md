@@ -2,7 +2,7 @@
 
 ## Status
 
-**Project stage:** Phase 2 complete; Phase 3 is next
+**Project stage:** Phase 3 complete; Phase 4 is next
 **Target:** Windows 11 first, cross-platform architecture  
 **Version:** 0.1.0  
 **Authoritative requirements:** `Battery_Tracker_Master_Codex_Prompt.md`
@@ -44,6 +44,7 @@ This is a living plan. Codex must update it as implementation proceeds.
 - The Codex OneDrive workspace inherits an `Everyone: Deny DeleteSubdirectoriesAndFiles` ACL. Flutter cannot refresh ignored `build/` and Apple `ephemeral/` directories there.
 - A fresh temporary snapshot with normal ACLs completed `flutter pub get`, formatting, code generation, analysis, and all 28 tests. Generated Drift source and the schema snapshot matched the checked-in artifacts byte-for-byte.
 - `flutter build windows --no-pub` produced `build\windows\x64\runner\Release\battery_tracker.exe`. That executable remained healthy for five seconds on each of two launch attempts.
+- Phase 3 verification from a refreshed normal-ACL snapshot completed dependency resolution, clean formatting, clean static analysis, all 74 tests, and a Windows Release build. The final executable remained healthy for five seconds on each of two launch attempts; generated Drift source and schema version 1 remained byte-for-byte unchanged.
 
 ---
 
@@ -135,33 +136,43 @@ Finalize architecture before feature implementation.
 
 # Phase 3 — Icon System
 
-**Status:** Not started
+**Status:** Complete (2026-08-15)
 
 ## Scope
 
-- [ ] Built-in Icon Registry
-- [ ] Default Battery icon
-- [ ] Default Set icon
-- [ ] Default Device icon
-- [ ] Icon selector
-- [ ] Categories/search
-- [ ] Icon colors
-- [ ] Custom PNG import
-- [ ] Custom SVG import
-- [ ] Custom icon categories
-- [ ] Safe custom icon deletion/replacement
-- [ ] Missing/deprecated icon handling
-- [ ] Persistence
+- [x] Built-in Icon Registry
+- [x] Default Battery icon
+- [x] Default Set icon
+- [x] Default Device icon
+- [x] Icon selector
+- [x] Categories/search
+- [x] Icon colors
+- [x] Custom PNG import
+- [x] Custom SVG import
+- [x] Custom icon categories
+- [x] Safe custom icon deletion/replacement
+- [x] Missing/deprecated icon handling
+- [x] Persistence
 
 ## Acceptance
 
-- [ ] icon-only Battery works
-- [ ] icon-only Set works
-- [ ] icon-only Device works
-- [ ] icon color persists after restart
-- [ ] custom icon persists after restart
-- [ ] in-use custom icon cannot be silently deleted
-- [ ] Light/Dark display is usable
+- [x] icon-only Battery works
+- [x] icon-only Set works
+- [x] icon-only Device works
+- [x] icon color persists after restart
+- [x] custom icon persists after restart
+- [x] in-use custom icon cannot be silently deleted
+- [x] Light/Dark display is usable
+
+## Phase 3 implementation notes
+
+- Added a centralized registry with 54 packaged SVG assets, searchable categories and keywords, owner-scoped defaults, deprecation redirects, and deterministic missing-reference fallback.
+- Added immutable validated icon colors with the required preset palette and custom `#RRGGBB` values; owner selections persist source, logical key/UUID, and color without changing permanent entity identity.
+- Added Drift repositories for custom categories, custom-icon metadata, bounded recent selections, owner usage counts, activity records, and transactional replacement across Batteries, Battery Sets, Devices, and Battery Types.
+- Added application-managed PNG/SVG imports with content/size validation, unsafe SVG rejection, UUID-based relative paths, compensating cleanup, source replacement, duplication, deactivation, and in-use deletion safeguards.
+- Added a reusable responsive icon chooser and Settings Icon Library for search/filter, preview, color selection, import, edit, category creation, source replacement, duplication, and explicit replacement/default deletion.
+- Added native file dialogs behind `FileSelectionService`; feature/domain code remains independent of plugin and Windows APIs.
+- Icon-specific verification covers 45 tests, including restart persistence, transaction rollback, missing-file fallback, Light/Dark rendering, and full library workflows. Final repository/build verification is recorded in the environment notes.
 
 ---
 
@@ -546,6 +557,9 @@ Record decisions below as they are made.
 | 2026-08-15 | Set assignment creates Set and member rows | Supports fast current Battery queries while preserving the Set action's historical meaning. | Rows share an operation UUID and are inserted/closed atomically. |
 | 2026-08-15 | PDF is the label/print interchange | Keeps label layout platform-neutral and supports preview/export/host printing. | Printer adapters consume PDF bytes rather than label-domain objects. |
 | 2026-08-15 | Manifested ZIP backup with staging restore | Enables validation, checksums, traversal protection, and recovery before overwrite. | Restore never extracts directly over active data. |
+| 2026-08-15 | Central immutable built-in icon catalog plus UUID custom records | Gives every owner a stable icon-first identity while allowing safe user extension. | Built-ins use logical keys; custom icons use permanent UUIDs and managed relative paths. |
+| 2026-08-15 | `flutter_svg` plus validated managed SVG/PNG storage | Supports packaged and user-imported cross-platform icons without storing bytes in SQLite. | SVG imports reject scripts/external content; missing files render owner defaults. |
+| 2026-08-15 | `file_selector` only behind `FileSelectionService` | Uses maintained native dialogs without leaking plugin values into features or domain models. | Windows, Android, iOS, and macOS adapters remain replaceable at the service boundary. |
 
 ---
 
@@ -562,9 +576,9 @@ Record decisions below as they are made.
 
 # Current next action
 
-1. Begin Phase 3 with the built-in Icon Registry and default Battery, Battery Set, and Device icons before adding any photograph workflow.
-2. Keep custom PNG/SVG files in application-managed storage and preserve logical permanent UUID references.
-3. Verify icon-only records, color persistence, safe replacement/deletion, and missing/deprecated fallback before any photograph workflow begins.
+1. Begin Phase 4 with the Battery Type repository and validation rules.
+2. Reuse the Phase 3 icon chooser for suggested Battery Type icon/color without coupling Battery Types to presentation widgets.
+3. Preserve permanent UUIDs, deactivation semantics, and real restart persistence in Battery Type CRUD.
 
 ## Tooling maintenance
 

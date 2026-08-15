@@ -1,6 +1,6 @@
 # Battery Tracker — Version 1 Database Plan
 
-**Decision status:** Phase 2 executable schema version 1
+**Decision status:** Phase 3 executable schema version 1; icon tables operational
 **Engine/access:** SQLite through Drift  
 **Initial schema version:** 1
 
@@ -119,11 +119,13 @@ At most one active primary photo per owner is enforced with a partial unique ind
 
 Custom/reusable categories: `uuid`, name, scope (`battery`, `battery_set`, `device`, `general`), timestamps, and `deactivated_at`. Active names are unique within scope.
 
+Phase 3 bootstraps idempotent Batteries, Battery Sets, Devices, and General categories through the repository during application startup.
+
 ### `custom_icons`
 
 Stores permanent `uuid`, name, category foreign key, managed relative path, file type (`png` or `svg` initially), `supports_color`, timestamps, and `deactivated_at`.
 
-Before deactivation/deletion, repositories count Battery/Set/Device references. A replacement transaction updates every reference or the operation is cancelled.
+Before deactivation/deletion, repositories count Battery, Battery Set, Device, and Battery Type references. A replacement transaction validates the replacement, updates every reference and activity history, and then deactivates the icon; any failure rolls the entire database operation back. Source-file replacement retains the same UUID and swaps only its managed relative path after validation.
 
 ### `tags`, `battery_tags`
 

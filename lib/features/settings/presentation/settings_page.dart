@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/app_page_scaffold.dart';
+import '../../icons/presentation/icon_library_page.dart';
 import '../application/theme_preference_controller.dart';
 import '../domain/theme_preference.dart';
 
@@ -94,6 +95,25 @@ class SettingsPage extends ConsumerWidget {
                   ],
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Card(
+            child: ListTile(
+              key: const ValueKey('settings-icon-library'),
+              leading: const Icon(Icons.widgets_outlined),
+              title: const Text('Icon Library'),
+              subtitle: const Text(
+                'Browse packaged icons and safely manage custom PNG or SVG icons.',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const IconLibraryPage(),
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 20),

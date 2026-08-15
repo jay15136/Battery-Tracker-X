@@ -4,7 +4,7 @@ Battery Tracker is an offline-first rechargeable-battery inventory and device-ma
 
 The initial target is **Windows 11**. The architecture is intended to remain portable to Android, iPhone/iPad, and macOS.
 
-> Development status: Phase 2 foundation is complete and verified with a Windows Release build and launch checks. Phase 3, the icon-first visual system, is next. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
+> Development status: Phase 3, the icon-first visual system, is complete. Phase 4 Battery Types is next. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
 
 ## Core Version 1 scope
 
@@ -134,6 +134,12 @@ flutter build windows
 
 The default primary visual is an icon. Photos are optional and remain supplemental unless the user explicitly chooses Photo as Primary.
 
+## Icon system
+
+Settings → Icon Library provides 54 packaged SVG icons with Battery, Battery Set, Device, and General categories. The reusable chooser supports name/category/keyword search, Built-In/Custom/Recent filters, the required color palette, validated custom hex colors, previews, and owner-specific defaults.
+
+Custom PNG and SVG imports receive permanent UUIDs and are copied into application-managed storage. SVG scripts and external content are rejected. Editing metadata or replacing a file never changes the custom icon UUID. In-use deletion reports the reference count and requires an explicit replacement icon or owner defaults; a missing custom file renders the owner default instead of a broken image.
+
 ## Data identity
 
 Permanent UUIDs are the authoritative identity for Batteries, Battery Sets, Devices, and Custom Icons.
@@ -144,19 +150,19 @@ User-facing IDs such as `AA-001` remain editable and must not be used as immutab
 
 Battery Tracker resolves an operating-system application-support directory at runtime and creates a `BatteryTracker` directory beneath it. On Windows this is under the current user's roaming application-data directory, normally `%APPDATA%\<publisher>\<product>\BatteryTracker`.
 
-The implemented Phase 2 layout is:
+The implemented Phase 3 layout is:
 
 ```text
 BatteryTracker/
   database/battery_tracker.sqlite
   database/tmp/
+  custom_icons/{custom-icon-uuid}/source-{revision-uuid}.png|svg
   logs/battery_tracker.log
 ```
 
 Later feature phases add:
 
 - `photos/`
-- `custom_icons/`
 - `label_templates/`
 - `backups/`
 
@@ -194,7 +200,7 @@ flutter build windows
 
 The complete acceptance scenarios are in `Battery_Tracker_Master_Codex_Prompt.md`.
 
-Foundation tests cover configuration validation, bounded file logging, SQLite creation and constraints, foreign keys, transaction rollback, restart persistence, Riverpod theme state, typed navigation, theme UI, and production bootstrap.
+The current 74-test suite covers the Phase 2 foundation plus packaged icon completeness, search/default/fallback resolution, color validation, managed PNG/SVG safety, UUID/restart persistence, transactional reference replacement and rollback, chooser behavior, Light/Dark and narrow-window rendering, and the complete Settings Icon Library workflow.
 
 ## Version
 
@@ -210,6 +216,6 @@ See `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Known environment limitations
 
-On the inspected Windows workstation, Flutter is installed at `C:\Users\jay15\Develop\flutter` but is not on `PATH`. The repository scripts locate that installation automatically. Flutter detects Visual Studio Professional 2026 with its Windows C++ toolchain, and the Phase 2 Windows Release build succeeds.
+On the inspected Windows workstation, Flutter is installed at `C:\Users\jay15\Develop\flutter` but is not on `PATH`. The repository scripts locate that installation automatically. Flutter detects Visual Studio Professional 2026 with its Windows C++ toolchain, and the Phase 3 Windows Release build succeeds and passes repeated launch checks.
 
 The current Codex workspace is under OneDrive and inherits a delete-deny ACL that prevents Flutter from refreshing generated `build/` and Apple `ephemeral/` directories. Verification can run from a temporary non-OneDrive snapshot without changing product code. A normal local checkout without that ACL should use the standard commands above.
