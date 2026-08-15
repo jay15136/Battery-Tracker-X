@@ -49,13 +49,42 @@ class BatteryTypesPage extends ConsumerWidget {
   }
 }
 
-class _Toolbar extends ConsumerWidget {
+class _Toolbar extends ConsumerStatefulWidget {
   const _Toolbar({required this.snapshot});
 
   final BatteryTypeCatalogSnapshot snapshot;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Toolbar> createState() => _ToolbarState();
+}
+
+class _ToolbarState extends ConsumerState<_Toolbar> {
+  late final TextEditingController _searchController;
+  late final FocusNode _searchFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(text: widget.snapshot.query);
+    _searchFocusNode = FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(covariant _Toolbar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _synchronizeQuery(widget.snapshot.query);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final snapshot = widget.snapshot;
     final controller = ref.read(batteryTypeCatalogProvider.notifier);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -65,6 +94,8 @@ class _Toolbar extends ConsumerWidget {
             Expanded(
               child: TextField(
                 key: const ValueKey('battery-types-search'),
+                controller: _searchController,
+                focusNode: _searchFocusNode,
                 decoration: const InputDecoration(
                   labelText: 'Search Battery Types',
                   hintText: 'Name, chemistry, size, or description',
@@ -119,6 +150,25 @@ class _Toolbar extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _synchronizeQuery(String query) {
+    final current = _searchController.value;
+    if (current.text == query ||
+        (_searchFocusNode.hasFocus && current.text.trim() == query)) {
+      return;
+    }
+    final selection = current.selection;
+    final nextSelection = selection.isValid
+        ? TextSelection(
+            baseOffset: math.min(selection.baseOffset, query.length),
+            extentOffset: math.min(selection.extentOffset, query.length),
+          )
+        : TextSelection.collapsed(offset: query.length);
+    _searchController.value = TextEditingValue(
+      text: query,
+      selection: nextSelection,
     );
   }
 }
@@ -243,6 +293,7 @@ class _BatteryTypeRow extends StatelessWidget {
     final specifications = [
       record.chemistry,
       record.physicalSize,
+      _voltage(record),
       _capacity(record),
     ].whereType<String>().join(' • ');
     return Semantics(
@@ -419,6 +470,22 @@ class _BatteryTypeDetails extends ConsumerWidget {
                 child: const Text('Usage counts are unavailable.'),
               ),
               data: (value) => Text(_usageSentence(value)),
+            ),
+            const SizedBox(height: 18),
+            const _DetailHeading('Lifecycle'),
+            _DetailValue(
+              label: 'Created',
+              value: _formatLocalTimestamp(record.createdAt),
+            ),
+            _DetailValue(
+              label: 'Modified',
+              value: _formatLocalTimestamp(record.modifiedAt),
+            ),
+            _DetailValue(
+              label: 'Deactivated',
+              value: record.deactivatedAt == null
+                  ? 'Active — not deactivated'
+                  : _formatLocalTimestamp(record.deactivatedAt!),
             ),
             const SizedBox(height: 18),
             const _DetailHeading('Permanent UUID'),
@@ -603,6 +670,14 @@ Future<void> _addBatteryType(BuildContext context, WidgetRef ref) async {
     if (context.mounted) {
       _message(context, 'Battery Type added.');
     }
+  } on BatteryTypeCatalogRefreshWarning catch (warning) {
+    _logRefreshWarning(ref, warning);
+    if (context.mounted) {
+      _message(
+        context,
+        'Battery Type was added, but the list could not refresh.',
+      );
+    }
   } on BatteryTypeNameConflictException {
     if (context.mounted) {
       _message(context, 'An active Battery Type already uses this name.');
@@ -631,9 +706,24 @@ Future<void> _editBatteryType(
     if (context.mounted) {
       _message(context, 'Battery Type updated.');
     }
+  } on BatteryTypeCatalogRefreshWarning catch (warning) {
+    _logRefreshWarning(ref, warning);
+    if (context.mounted) {
+      _message(
+        context,
+        'Battery Type was updated, but the list could not refresh.',
+      );
+    }
   } on BatteryTypeNameConflictException {
     if (context.mounted) {
       _message(context, 'An active Battery Type already uses this name.');
+    }
+  } on BatteryTypeNotFoundException {
+    if (context.mounted) {
+      _message(
+        context,
+        'This Battery Type no longer exists. The list was refreshed.',
+      );
     }
   } on Object catch (error, stackTrace) {
     _logFailure(ref, error, stackTrace);
@@ -649,6 +739,7 @@ Future<void> _deactivate(
   BatteryTypeRecord record,
 ) async {
   try {
+    ref.invalidate(batteryTypeUsageProvider(record.id));
     final usage = await ref.read(batteryTypeUsageProvider(record.id).future);
     if (!context.mounted) {
       return;
@@ -686,6 +777,29 @@ Future<void> _deactivate(
     await ref.read(batteryTypeCatalogProvider.notifier).deactivate(record.id);
     if (context.mounted) {
       _message(context, 'Battery Type deactivated.');
+    }
+  } on BatteryTypeCatalogRefreshWarning catch (warning) {
+    _logRefreshWarning(ref, warning);
+    if (context.mounted) {
+      _message(
+        context,
+        'Battery Type was deactivated, but the list could not refresh.',
+      );
+    }
+  } on BatteryTypeStateConflictException {
+    if (context.mounted) {
+      _message(
+        context,
+        'This Battery Type changed before it could be deactivated. '
+        'The list was refreshed.',
+      );
+    }
+  } on BatteryTypeNotFoundException {
+    if (context.mounted) {
+      _message(
+        context,
+        'This Battery Type no longer exists. The list was refreshed.',
+      );
     }
   } on Object catch (error, stackTrace) {
     _logFailure(ref, error, stackTrace);
@@ -727,11 +841,34 @@ Future<void> _reactivate(
     if (context.mounted) {
       _message(context, 'Battery Type reactivated.');
     }
+  } on BatteryTypeCatalogRefreshWarning catch (warning) {
+    _logRefreshWarning(ref, warning);
+    if (context.mounted) {
+      _message(
+        context,
+        'Battery Type was reactivated, but the list could not refresh.',
+      );
+    }
   } on BatteryTypeReactivationConflictException {
     if (context.mounted) {
       _message(
         context,
         'A different active Battery Type already uses this name.',
+      );
+    }
+  } on BatteryTypeStateConflictException {
+    if (context.mounted) {
+      _message(
+        context,
+        'This Battery Type changed before it could be reactivated. '
+        'The list was refreshed.',
+      );
+    }
+  } on BatteryTypeNotFoundException {
+    if (context.mounted) {
+      _message(
+        context,
+        'This Battery Type no longer exists. The list was refreshed.',
       );
     }
   } on Object catch (error, stackTrace) {
@@ -747,6 +884,17 @@ void _logFailure(WidgetRef ref, Object error, StackTrace stackTrace) {
         'Battery Type operation failed.',
         error,
         stackTrace,
+      );
+}
+
+void _logRefreshWarning(
+  WidgetRef ref,
+  BatteryTypeCatalogRefreshWarning warning,
+) {
+  ref.read(appLogServiceProvider).logger('battery_types.ui').severe(
+        'Battery Type catalog refresh failed after a committed change.',
+        warning.error,
+        warning.stackTrace,
       );
 }
 
@@ -767,6 +915,14 @@ String? _capacity(BatteryTypeRecord record) => record.defaultCapacity == null
 String _number(double value) => value == value.roundToDouble()
     ? value.toInt().toString()
     : value.toString();
+
+String _formatLocalTimestamp(DateTime timestamp) {
+  final local = timestamp.toLocal();
+  String twoDigits(int value) => value.toString().padLeft(2, '0');
+  return '${local.year.toString().padLeft(4, '0')}-'
+      '${twoDigits(local.month)}-${twoDigits(local.day)} '
+      '${twoDigits(local.hour)}:${twoDigits(local.minute)}';
+}
 
 String _usageSentence(BatteryTypeUsage usage) {
   final batteries = usage.batteries == 1 ? 'Battery' : 'Batteries';

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/app_providers.dart';
 import '../../icons/data/built_in_icon_registry.dart';
 import '../../icons/domain/icon_definition.dart';
 import '../../icons/domain/icon_registry.dart';
 import '../../icons/domain/icon_selection.dart';
 import '../../icons/presentation/icon_picker_dialog.dart';
-import '../../icons/presentation/icon_visual.dart';
 import '../domain/battery_type.dart';
 import '../domain/battery_type_draft.dart';
+import 'battery_type_icon.dart';
 
 const chemistrySuggestions = [
   'NiMH',
@@ -56,7 +55,6 @@ class _BatteryTypeFormDialogState extends ConsumerState<BatteryTypeFormDialog> {
   late String _chemistry;
   late String _capacityUnit;
   late IconSelection _suggestedIcon;
-  late IconDefinition _visualDefinition;
 
   IconRegistry get _builtInRegistry => IconRegistry(
         builtIns: BuiltInIconRegistry.definitions,
@@ -85,8 +83,6 @@ class _BatteryTypeFormDialogState extends ConsumerState<BatteryTypeFormDialog> {
           key: _fallbackIcon.key,
           color: _fallbackIcon.defaultColor,
         );
-    _visualDefinition = _fallbackIcon;
-    Future<void>.microtask(() => _resolveVisualDefinition(_suggestedIcon));
   }
 
   @override
@@ -240,11 +236,7 @@ class _BatteryTypeFormDialogState extends ConsumerState<BatteryTypeFormDialog> {
                     _Section(
                       title: 'Visual Default',
                       child: _VisualDefault(
-                        definition: _visualDefinition,
                         selection: _suggestedIcon,
-                        fallbackDefinition: _fallbackIcon,
-                        applicationSupportRoot:
-                            ref.watch(applicationSupportRootProvider),
                         onChooseIcon: _chooseIcon,
                       ),
                     ),
@@ -355,21 +347,6 @@ class _BatteryTypeFormDialogState extends ConsumerState<BatteryTypeFormDialog> {
       return;
     }
     setState(() => _suggestedIcon = selection);
-    await _resolveVisualDefinition(selection);
-  }
-
-  Future<void> _resolveVisualDefinition(IconSelection selection) async {
-    final customIcons = await ref
-        .read(iconRepositoryProvider)
-        .listCustomIcons(scope: IconScope.battery);
-    final resolved = IconRegistry(
-      builtIns: BuiltInIconRegistry.definitions,
-      customIcons: customIcons.map((icon) => icon.toDefinition()),
-    ).resolve(scope: IconScope.battery, selection: selection);
-    if (!mounted || selection != _suggestedIcon) {
-      return;
-    }
-    setState(() => _visualDefinition = resolved.definition);
   }
 
   void _save() {
@@ -461,17 +438,11 @@ class _Section extends StatelessWidget {
 
 class _VisualDefault extends StatelessWidget {
   const _VisualDefault({
-    required this.definition,
     required this.selection,
-    required this.fallbackDefinition,
-    required this.applicationSupportRoot,
     required this.onChooseIcon,
   });
 
-  final IconDefinition definition;
   final IconSelection selection;
-  final IconDefinition fallbackDefinition;
-  final Uri applicationSupportRoot;
   final VoidCallback onChooseIcon;
 
   @override
@@ -497,13 +468,7 @@ class _VisualDefault extends StatelessWidget {
               color: colors.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: IconVisual(
-              definition: definition,
-              color: selection.color,
-              fallbackDefinition: fallbackDefinition,
-              applicationSupportRoot: applicationSupportRoot,
-              size: 52,
-            ),
+            child: BatteryTypeIcon(selection: selection, size: 52),
           ),
           SizedBox(
             width: 260,
@@ -511,8 +476,10 @@ class _VisualDefault extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(definition.displayName,
-                    style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  'Battery icon preview',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: 2),
                 Text(
                   'Suggested icon and color for new batteries of this type.',

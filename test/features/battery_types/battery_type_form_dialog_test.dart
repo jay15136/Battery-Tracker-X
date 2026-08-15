@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:battery_tracker/app/app_providers.dart';
 import 'package:battery_tracker/core/database/app_database.dart';
 import 'package:battery_tracker/core/identity/permanent_id.dart';
+import 'package:battery_tracker/core/logging/app_log_service.dart';
 import 'package:battery_tracker/features/battery_types/domain/battery_type.dart';
 import 'package:battery_tracker/features/battery_types/domain/battery_type_draft.dart';
 import 'package:battery_tracker/features/battery_types/presentation/battery_type_form_dialog.dart';
@@ -16,6 +18,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logging/logging.dart';
 
 void main() {
   late AppDatabase database;
@@ -212,6 +215,43 @@ void main() {
 
     expect(find.textContaining('battery_aaa|#FF9800'), findsOneWidget);
   });
+
+  testWidgets(
+      'unexpected icon repository failure logs once and keeps fallback visible',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    await database.customStatement(
+      'ALTER TABLE custom_icons RENAME TO unavailable_custom_icons',
+    );
+    await tester.pumpWidget(
+      _FormHarness(
+        iconRepository: iconRepository,
+        root: root,
+        logs: logs,
+        record: _record(
+          suggestedIcon: const IconSelection(
+            source: IconSource.custom,
+            key: '96000000-0000-4000-8000-000000000001',
+            color: IconColor.brown,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open form'));
+    await tester.pumpAndSettle();
+
+    expect(find.bySemanticsLabel('Generic Battery'), findsOneWidget);
+    expect(find.textContaining('SqliteException'), findsNothing);
+    expect(logs.severeRecords, hasLength(1));
+    expect(logs.scopes, ['battery_types.ui']);
+    expect(logs.severeRecords.single.message, 'Battery Type operation failed.');
+    expect(logs.severeRecords.single.error, isNotNull);
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(logs.severeRecords, hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Finder _field(String name) => find.byKey(ValueKey('battery-type-$name-field'));
@@ -226,7 +266,7 @@ String _textOf(Finder finder) =>
         ? (finder.evaluate().single.widget as TextFormField).controller!.text
         : throw StateError('Expected a TextFormField.');
 
-BatteryTypeRecord _record() => BatteryTypeRecord(
+BatteryTypeRecord _record({IconSelection? suggestedIcon}) => BatteryTypeRecord(
       id: PermanentId.parse('90000000-0000-4000-8000-000000000001'),
       typeName: 'AA NiMH',
       description: 'Rechargeable AA cells',
@@ -235,11 +275,12 @@ BatteryTypeRecord _record() => BatteryTypeRecord(
       defaultCapacity: 2500,
       capacityUnit: 'mAh',
       physicalSize: 'AA',
-      suggestedIcon: const IconSelection(
-        source: IconSource.builtin,
-        key: 'battery_aa',
-        color: IconColor.green,
-      ),
+      suggestedIcon: suggestedIcon ??
+          const IconSelection(
+            source: IconSource.builtin,
+            key: 'battery_aa',
+            color: IconColor.green,
+          ),
       notes: 'Fleet stock',
       createdAt: DateTime.utc(2026),
       modifiedAt: DateTime.utc(2026),
@@ -251,11 +292,13 @@ final class _FormHarness extends StatefulWidget {
     required this.iconRepository,
     required this.root,
     this.record,
+    this.logs,
   });
 
   final DriftIconRepository iconRepository;
   final Directory root;
   final BatteryTypeRecord? record;
+  final AppLogService? logs;
 
   @override
   State<_FormHarness> createState() => _FormHarnessState();
@@ -271,6 +314,8 @@ final class _FormHarnessState extends State<_FormHarness> {
       overrides: [
         iconRepositoryProvider.overrideWithValue(widget.iconRepository),
         applicationSupportRootProvider.overrideWithValue(widget.root.uri),
+        if (widget.logs != null)
+          appLogServiceProvider.overrideWithValue(widget.logs!),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -306,6 +351,33 @@ final class _FormHarnessState extends State<_FormHarness> {
         ),
       ),
     );
+  }
+}
+
+final class _LogService implements AppLogService {
+  _LogService() {
+    _subscription = _logger.onRecord.listen(records.add);
+  }
+
+  final Logger _logger = Logger.detached('test.battery_types.ui')
+    ..level = Level.ALL;
+  final List<LogRecord> records = [];
+  final List<String> scopes = [];
+  late final StreamSubscription<LogRecord> _subscription;
+
+  List<LogRecord> get severeRecords =>
+      records.where((record) => record.level == Level.SEVERE).toList();
+
+  @override
+  Future<void> close() => _subscription.cancel();
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Logger logger(String scope) {
+    scopes.add(scope);
+    return _logger;
   }
 }
 

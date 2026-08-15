@@ -8,6 +8,16 @@ import '../domain/battery_type_repository.dart';
 
 enum BatteryTypeStatusFilter { active, inactive, all }
 
+final class BatteryTypeCatalogRefreshWarning implements Exception {
+  const BatteryTypeCatalogRefreshWarning({
+    required this.error,
+    required this.stackTrace,
+  });
+
+  final Object error;
+  final StackTrace stackTrace;
+}
+
 final class BatteryTypeCatalogSnapshot {
   const BatteryTypeCatalogSnapshot({
     required this.records,
@@ -72,40 +82,98 @@ final class BatteryTypeCatalogController
   }
 
   Future<BatteryTypeRecord> create(BatteryTypeDraft draft) async {
-    final created = await _repository.create(draft);
-    await refresh();
-    _selectedId = created.id;
-    _emit();
-    return created;
+    return _commitMutation(() => _repository.create(draft));
   }
 
   Future<BatteryTypeRecord> updateBatteryType(
     PermanentId id,
     BatteryTypeDraft draft,
   ) async {
-    final updated = await _repository.update(id, draft);
-    await refresh();
-    _selectedId = updated.id;
-    _emit();
-    return updated;
+    return _commitMutation(() => _repository.update(id, draft));
   }
 
   Future<BatteryTypeRecord> deactivate(PermanentId id) async {
-    final deactivated = await _repository.deactivate(id);
-    ref.invalidate(batteryTypeUsageProvider(id));
-    await refresh();
-    return deactivated;
+    return _commitMutation(
+      () => _repository.deactivate(id),
+      invalidateUsageFor: id,
+    );
   }
 
   Future<BatteryTypeRecord> reactivate(PermanentId id) async {
-    final reactivated = await _repository.reactivate(id);
-    ref.invalidate(batteryTypeUsageProvider(id));
-    await refresh();
-    return reactivated;
+    return _commitMutation(
+      () => _repository.reactivate(id),
+      invalidateUsageFor: id,
+    );
   }
 
   BatteryTypeRepository get _repository =>
       ref.read(batteryTypeRepositoryProvider);
+
+  Future<BatteryTypeRecord> _commitMutation(
+    Future<BatteryTypeRecord> Function() mutation, {
+    PermanentId? invalidateUsageFor,
+  }) async {
+    late final BatteryTypeRecord persisted;
+    try {
+      persisted = await mutation();
+    } on Object catch (error, stackTrace) {
+      if (!_isExpectedConflict(error)) {
+        rethrow;
+      }
+      await _bestEffortConflictRefresh();
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+
+    if (invalidateUsageFor != null) {
+      ref.invalidate(batteryTypeUsageProvider(invalidateUsageFor));
+    }
+    _reconcilePersistedRecord(persisted);
+    try {
+      await refresh();
+    } on Object catch (error, stackTrace) {
+      throw BatteryTypeCatalogRefreshWarning(
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+    return persisted;
+  }
+
+  bool _isExpectedConflict(Object error) =>
+      error is BatteryTypeNameConflictException ||
+      error is BatteryTypeReactivationConflictException ||
+      error is BatteryTypeStateConflictException ||
+      error is BatteryTypeNotFoundException;
+
+  Future<void> _bestEffortConflictRefresh() async {
+    try {
+      await refresh();
+    } on Object {
+      // Preserve the original typed conflict for presentation.
+    }
+  }
+
+  void _reconcilePersistedRecord(BatteryTypeRecord persisted) {
+    _records = [
+      for (final record in _records)
+        if (record.id != persisted.id) record,
+      persisted,
+    ]..sort(_compareCatalogRecords);
+    _selectedId = persisted.id;
+    _emit();
+  }
+
+  int _compareCatalogRecords(
+    BatteryTypeRecord left,
+    BatteryTypeRecord right,
+  ) {
+    if (left.isActive != right.isActive) {
+      return left.isActive ? -1 : 1;
+    }
+    final byName =
+        left.typeName.toLowerCase().compareTo(right.typeName.toLowerCase());
+    return byName != 0 ? byName : left.id.value.compareTo(right.id.value);
+  }
 
   BatteryTypeCatalogSnapshot _snapshot() {
     final normalizedQuery = _query.toLowerCase();

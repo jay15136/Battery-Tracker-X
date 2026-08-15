@@ -33,6 +33,7 @@ final class DriftBatteryTypeRepository implements BatteryTypeRepository {
       query.where((table) => table.deactivatedAt.isNull());
     }
     query.orderBy([
+      (table) => OrderingTerm.asc(table.deactivatedAt.isNotNull()),
       (table) => OrderingTerm.asc(table.typeName.lower()),
     ]);
     return (await query.get()).map(_mapRecord).toList(growable: false);

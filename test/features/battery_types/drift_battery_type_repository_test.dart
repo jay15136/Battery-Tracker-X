@@ -72,6 +72,28 @@ void main() {
     expect(active.map((type) => type.typeName), ['AA NiMH', 'C NiMH']);
   });
 
+  test('lists mixed statuses active first and alphabetically within each group',
+      () async {
+    final alpha = await repository.create(validDraft(typeName: 'alpha'));
+    await repository.create(validDraft(typeName: 'zulu'));
+    await repository.create(validDraft(typeName: 'Beta'));
+    final charlie = await repository.create(validDraft(typeName: 'charlie'));
+    await repository.deactivate(alpha.id);
+    await repository.deactivate(charlie.id);
+
+    final all = await repository.list(includeInactive: true);
+
+    expect(
+      all.map((type) => (name: type.typeName, active: type.isActive)),
+      [
+        (name: 'Beta', active: true),
+        (name: 'zulu', active: true),
+        (name: 'alpha', active: false),
+        (name: 'charlie', active: false),
+      ],
+    );
+  });
+
   test('creates a type with its selected custom icon and color', () async {
     final category = await iconRepository.createCategory(
       id: PermanentId.parse('10000000-0000-4000-8000-000000000001'),

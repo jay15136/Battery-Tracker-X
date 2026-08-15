@@ -6,9 +6,13 @@ import 'package:battery_tracker/core/database/app_database.dart';
 import 'package:battery_tracker/core/identity/permanent_id.dart';
 import 'package:battery_tracker/core/logging/app_log_service.dart';
 import 'package:battery_tracker/features/battery_types/data/drift_battery_type_repository.dart';
+import 'package:battery_tracker/features/battery_types/domain/battery_type_draft.dart';
 import 'package:battery_tracker/features/icons/data/built_in_icon_registry.dart';
 import 'package:battery_tracker/features/icons/data/drift_icon_repository.dart';
+import 'package:battery_tracker/features/icons/domain/icon_color.dart';
+import 'package:battery_tracker/features/icons/domain/icon_definition.dart';
 import 'package:battery_tracker/features/icons/domain/icon_registry.dart';
+import 'package:battery_tracker/features/icons/domain/icon_selection.dart';
 import 'package:battery_tracker/features/settings/domain/app_settings_repository.dart';
 import 'package:battery_tracker/features/settings/domain/theme_preference.dart';
 import 'package:drift/native.dart';
@@ -71,6 +75,39 @@ void main() {
     expect(find.byKey(const ValueKey('empty-state-panel')), findsNothing);
   });
 
+  testWidgets('Battery Types search text follows its retained catalog query',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await fixture.types.create(_draft(typeName: 'AA NiMH', chemistry: 'NiMH'));
+    await fixture.types.create(
+      _draft(typeName: 'Radio Pack', chemistry: 'LiFePO4'),
+    );
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('destination-batteryTypes')));
+    await tester.pumpAndSettle();
+    final search = find.byKey(const ValueKey('battery-types-search'));
+    await tester.enterText(search, 'radio');
+    await tester.pump();
+    expect(find.text('Radio Pack'), findsWidgets);
+    expect(find.text('AA NiMH'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('destination-settings')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-batteryTypes')));
+    await tester.pumpAndSettle();
+
+    final editable = tester.widget<EditableText>(
+      find.descendant(of: search, matching: find.byType(EditableText)),
+    );
+    expect(editable.controller.text, 'radio');
+    expect(find.text('Radio Pack'), findsWidgets);
+    expect(find.text('AA NiMH'), findsNothing);
+  });
+
   testWidgets('appearance control persists and applies Dark mode',
       (tester) async {
     await _useDesktopSurface(tester);
@@ -90,10 +127,16 @@ void main() {
 }
 
 final class _AppFixture {
-  _AppFixture({required this.root, required this.database, required this.app});
+  _AppFixture({
+    required this.root,
+    required this.database,
+    required this.types,
+    required this.app,
+  });
 
   final Directory root;
   final AppDatabase database;
+  final DriftBatteryTypeRepository types;
   final Widget app;
 
   static Future<_AppFixture> create() async {
@@ -114,6 +157,7 @@ final class _AppFixture {
     return _AppFixture(
       root: root,
       database: database,
+      types: types,
       app: ProviderScope(
         overrides: [
           appSettingsRepositoryProvider
@@ -133,6 +177,26 @@ final class _AppFixture {
     await root.delete(recursive: true);
   }
 }
+
+BatteryTypeDraft _draft({
+  required String typeName,
+  required String chemistry,
+}) =>
+    BatteryTypeDraft(
+      typeName: typeName,
+      description: null,
+      chemistry: chemistry,
+      defaultVoltage: null,
+      defaultCapacity: null,
+      capacityUnit: null,
+      physicalSize: null,
+      notes: null,
+      suggestedIcon: const IconSelection(
+        source: IconSource.builtin,
+        key: 'battery_generic',
+        color: IconColor.defaultColor,
+      ),
+    );
 
 Future<void> _useDesktopSurface(WidgetTester tester) async {
   await tester.binding.setSurfaceSize(const Size(1280, 800));

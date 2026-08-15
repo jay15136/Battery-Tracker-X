@@ -208,7 +208,7 @@ flutter build windows
 
 The complete acceptance scenarios are in `Battery_Tracker_Master_Codex_Prompt.md`.
 
-The current 131-test suite covers the foundation and icon system plus Battery Type validation, Drift-backed CRUD/restart persistence, UUID stability, case-insensitive active-name and reactivation conflicts, reference-preserving deactivation with exact usage metadata, activity events and transaction rollback, controller refresh behavior, form errors/editable suggestions, icon fallback, and responsive page workflows.
+The current 151-test suite covers the foundation and icon system plus Battery Type validation, Drift-backed CRUD/restart persistence, UUID stability, case-insensitive active-name and reactivation conflicts, reference-preserving deactivation with exact usage metadata, activity events and transaction rollback, controller refresh behavior, form errors/editable suggestions, icon fallback, and responsive page workflows.
 
 ## Version
 

@@ -114,6 +114,133 @@ void main() {
     expect(find.text(created.id.value), findsOneWidget);
   });
 
+  testWidgets('reports a saved create when its catalog reload fails',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    final failingRepository = _PostWriteListFailingRepository(repository);
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: failingRepository,
+      logs: logs,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('battery-types-add')));
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('name'), 'Saved create');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Saved create'), findsWidgets);
+    expect(
+      find.text(
+        'Battery Type was added, but the list could not refresh.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Battery Type could not be added.'), findsNothing);
+    _expectSingleRefreshLog(logs);
+  });
+
+  testWidgets('reports a saved update when its catalog reload fails',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    await repository.create(_draft(typeName: 'Before update'));
+    final failingRepository = _PostWriteListFailingRepository(repository);
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: failingRepository,
+      logs: logs,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('battery-types-edit')));
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('name'), 'Saved update');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Saved update'), findsWidgets);
+    expect(
+      find.text(
+        'Battery Type was updated, but the list could not refresh.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Battery Type could not be updated.'), findsNothing);
+    _expectSingleRefreshLog(logs);
+  });
+
+  testWidgets('reports a saved deactivation when its catalog reload fails',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    final type = await repository.create(_draft(typeName: 'Saved deactivate'));
+    final failingRepository = _PostWriteListFailingRepository(repository);
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: failingRepository,
+      logs: logs,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('battery-types-deactivate')));
+    await tester.pumpAndSettle();
+    await tester.tap(_dialogAction('Deactivate'));
+    await tester.pumpAndSettle();
+
+    expect((await repository.get(type.id)).isActive, isFalse);
+    expect(find.text('Saved deactivate'), findsOneWidget);
+    expect(
+      find.text(
+        'Battery Type was deactivated, but the list could not refresh.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Battery Type could not be deactivated.'), findsNothing);
+    _expectSingleRefreshLog(logs);
+  });
+
+  testWidgets('reports a saved reactivation when its catalog reload fails',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    final type = await repository.create(_draft(typeName: 'Saved reactivate'));
+    await repository.deactivate(type.id);
+    final failingRepository = _PostWriteListFailingRepository(repository);
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: failingRepository,
+      logs: logs,
+    );
+    await tester
+        .tap(find.byKey(const ValueKey('battery-types-filter-inactive')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('battery-types-reactivate')));
+    await tester.pumpAndSettle();
+    await tester.tap(_dialogAction('Reactivate'));
+    await tester.pumpAndSettle();
+
+    expect((await repository.get(type.id)).isActive, isTrue);
+    expect(find.text('Saved reactivate'), findsOneWidget);
+    expect(
+      find.text(
+        'Battery Type was reactivated, but the list could not refresh.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Battery Type could not be reactivated.'), findsNothing);
+    _expectSingleRefreshLog(logs);
+  });
+
   testWidgets('searches chemistry and physical size and filters status',
       (tester) async {
     await repository.create(
@@ -162,6 +289,7 @@ void main() {
     await _seedUsage(database, type);
     await _pumpPage(tester, root: root, icons: icons, repository: repository);
 
+    expect(find.text('NiMH • AA • 1.2 V • 2500 mAh'), findsOneWidget);
     await tester.tap(find.byKey(ValueKey('battery-type-row-${type.id.value}')));
     await tester.pumpAndSettle();
 
@@ -175,6 +303,47 @@ void main() {
       find.text('Used by 1 Battery, 1 Battery Set, and 1 Device.'),
       findsOneWidget,
     );
+    expect(_detailValue(tester, 'Created'), matches(_timestampPattern));
+    expect(_detailValue(tester, 'Modified'), matches(_timestampPattern));
+    expect(_detailValue(tester, 'Deactivated'), 'Active — not deactivated');
+  });
+
+  testWidgets('inactive details show the deactivation timestamp',
+      (tester) async {
+    final type = await repository.create(_draft(typeName: 'Inactive type'));
+    await repository.deactivate(type.id);
+    await _pumpPage(tester, root: root, icons: icons, repository: repository);
+    await tester
+        .tap(find.byKey(const ValueKey('battery-types-filter-inactive')));
+    await tester.pumpAndSettle();
+
+    expect(_detailValue(tester, 'Created'), matches(_timestampPattern));
+    expect(_detailValue(tester, 'Modified'), matches(_timestampPattern));
+    expect(_detailValue(tester, 'Deactivated'), matches(_timestampPattern));
+    expect(find.text('Active — not deactivated'), findsNothing);
+  });
+
+  testWidgets('deactivation confirmation requests fresh usage counts',
+      (tester) async {
+    final type = await repository.create(_draft(typeName: 'Fresh usage'));
+    await _pumpPage(tester, root: root, icons: icons, repository: repository);
+    expect(
+      find.text('Used by 0 Batteries, 0 Battery Sets, and 0 Devices.'),
+      findsOneWidget,
+    );
+    await _seedUsage(database, type);
+
+    await tester.tap(find.byKey(const ValueKey('battery-types-deactivate')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Used by 1 Battery, 1 Battery Set, and 1 Device.'),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
   });
 
   testWidgets(
@@ -214,12 +383,114 @@ void main() {
     expect((await repository.get(type.id)).isActive, isTrue);
   });
 
+  testWidgets('duplicate name conflict is concise and not severely logged',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    await repository.create(_draft(typeName: 'AA NiMH'));
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: repository,
+      logs: logs,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('battery-types-add')));
+    await tester.pumpAndSettle();
+    await tester.enterText(_field('name'), ' aa nimh ');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('An active Battery Type already uses this name.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Exception'), findsNothing);
+    expect(logs.severeRecords, isEmpty);
+    expect(find.text('AA NiMH'), findsWidgets);
+  });
+
+  testWidgets('stale lifecycle conflict refreshes without severe logging',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    final type = await repository.create(_draft(typeName: 'Concurrent state'));
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: repository,
+      logs: logs,
+    );
+    await repository.deactivate(type.id);
+
+    await tester.tap(find.byKey(const ValueKey('battery-types-deactivate')));
+    await tester.pumpAndSettle();
+    await tester.tap(_dialogAction('Deactivate'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'This Battery Type changed before it could be deactivated. '
+        'The list was refreshed.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Exception'), findsNothing);
+    expect(logs.severeRecords, isEmpty);
+    expect(
+      find.text('No Battery Types match these filters.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('not-found conflict refreshes without severe logging',
+      (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
+    final type = await repository.create(_draft(typeName: 'Removed elsewhere'));
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: repository,
+      logs: logs,
+    );
+    await (database.delete(database.batteryTypes)
+          ..where((table) => table.uuid.equals(type.id.value)))
+        .go();
+
+    await tester.tap(find.byKey(const ValueKey('battery-types-edit')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Save changes'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'This Battery Type no longer exists. The list was refreshed.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Exception'), findsNothing);
+    expect(logs.severeRecords, isEmpty);
+    expect(find.text('No Battery Types yet.'), findsOneWidget);
+  });
+
   testWidgets('reactivation conflict shows concise copy without raw exception',
       (tester) async {
+    final logs = _LogService();
+    addTearDown(logs.close);
     final inactive = await repository.create(_draft(typeName: 'AA NiMH'));
     await repository.deactivate(inactive.id);
     await repository.create(_draft(typeName: 'AA NiMH'));
-    await _pumpPage(tester, root: root, icons: icons, repository: repository);
+    await _pumpPage(
+      tester,
+      root: root,
+      icons: icons,
+      repository: repository,
+      logs: logs,
+    );
     await tester
         .tap(find.byKey(const ValueKey('battery-types-filter-inactive')));
     await tester.pumpAndSettle();
@@ -234,6 +505,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('Exception'), findsNothing);
+    expect(logs.severeRecords, isEmpty);
   });
 
   testWidgets('catalog load failure logs once and shows concise retry UI',
@@ -355,6 +627,30 @@ Finder _dialogAction(String label) => find.descendant(
       matching: find.widgetWithText(FilledButton, label),
     );
 
+final _timestampPattern = RegExp(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$');
+
+String _detailValue(WidgetTester tester, String label) {
+  final row =
+      find.ancestor(of: find.text(label), matching: find.byType(Row)).first;
+  final texts = tester
+      .widgetList<Text>(find.descendant(of: row, matching: find.byType(Text)))
+      .map((text) => text.data)
+      .whereType<String>()
+      .toList();
+  expect(texts.first, label);
+  return texts.last;
+}
+
+void _expectSingleRefreshLog(_LogService logs) {
+  expect(logs.severeRecords, hasLength(1));
+  expect(logs.scopes, ['battery_types.ui']);
+  expect(
+    logs.severeRecords.single.message,
+    'Battery Type catalog refresh failed after a committed change.',
+  );
+  expect(logs.severeRecords.single.error, isA<StateError>());
+}
+
 BatteryTypeDraft _draft({
   required String typeName,
   String chemistry = 'NiMH',
@@ -445,6 +741,59 @@ final class _LogService implements AppLogService {
     scopes.add(scope);
     return _logger;
   }
+}
+
+final class _PostWriteListFailingRepository implements BatteryTypeRepository {
+  _PostWriteListFailingRepository(this._delegate);
+
+  final BatteryTypeRepository _delegate;
+  var _failNextList = false;
+
+  @override
+  Future<BatteryTypeRecord> create(BatteryTypeDraft draft) async {
+    final record = await _delegate.create(draft);
+    _failNextList = true;
+    return record;
+  }
+
+  @override
+  Future<BatteryTypeRecord> deactivate(PermanentId id) async {
+    final record = await _delegate.deactivate(id);
+    _failNextList = true;
+    return record;
+  }
+
+  @override
+  Future<BatteryTypeRecord> get(PermanentId id) => _delegate.get(id);
+
+  @override
+  Future<List<BatteryTypeRecord>> list({bool includeInactive = false}) {
+    if (_failNextList) {
+      _failNextList = false;
+      throw StateError('simulated post-write list failure');
+    }
+    return _delegate.list(includeInactive: includeInactive);
+  }
+
+  @override
+  Future<BatteryTypeRecord> reactivate(PermanentId id) async {
+    final record = await _delegate.reactivate(id);
+    _failNextList = true;
+    return record;
+  }
+
+  @override
+  Future<BatteryTypeRecord> update(
+    PermanentId id,
+    BatteryTypeDraft draft,
+  ) async {
+    final record = await _delegate.update(id, draft);
+    _failNextList = true;
+    return record;
+  }
+
+  @override
+  Future<BatteryTypeUsage> usage(PermanentId id) => _delegate.usage(id);
 }
 
 final class _Ids implements PermanentIdGenerator {
