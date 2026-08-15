@@ -176,6 +176,11 @@ abstract interface class IconRepository {
 
   Future<IconUsage> usageCount(PermanentId id);
 
+  Future<void> validateSelection({
+    required Set<IconScope> scopes,
+    required IconSelection selection,
+  });
+
   Future<void> saveOwnerSelection({
     required IconOwnerReference owner,
     required IconSelection selection,

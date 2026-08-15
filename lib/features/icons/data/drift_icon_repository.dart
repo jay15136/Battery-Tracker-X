@@ -227,7 +227,10 @@ final class DriftIconRepository implements IconRepository {
     required IconOwnerReference owner,
     required IconSelection selection,
   }) async {
-    await _validateSelection({owner.type.scope}, selection);
+    await validateSelection(
+      scopes: {owner.type.scope},
+      selection: selection,
+    );
     await database.transaction(() async {
       final now = _clock();
       final updated = await _updateOwner(owner, selection, now);
@@ -302,7 +305,7 @@ final class DriftIconRepository implements IconRepository {
         throw IconInUseException(usage);
       }
       if (replacement != null) {
-        await _validateSelection(usage.scopes, replacement);
+        await validateSelection(scopes: usage.scopes, selection: replacement);
         await _replaceReferences(id.value, replacement);
       } else if (replaceWithDefaults) {
         await _replaceReferencesWithDefaults(id.value);
@@ -403,10 +406,11 @@ final class DriftIconRepository implements IconRepository {
     );
   }
 
-  Future<void> _validateSelection(
-    Set<IconScope> scopes,
-    IconSelection selection,
-  ) async {
+  @override
+  Future<void> validateSelection({
+    required Set<IconScope> scopes,
+    required IconSelection selection,
+  }) async {
     if (scopes.isEmpty) {
       return;
     }

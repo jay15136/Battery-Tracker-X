@@ -27,6 +27,29 @@ void main() {
 
   tearDown(() => database.close());
 
+  test('validates Battery Type icon scope through the public boundary',
+      () async {
+    await repository.validateSelection(
+      scopes: const {IconScope.battery},
+      selection: const IconSelection(
+        source: IconSource.builtin,
+        key: 'battery_aa',
+        color: IconColor.green,
+      ),
+    );
+    await expectLater(
+      repository.validateSelection(
+        scopes: const {IconScope.battery},
+        selection: const IconSelection(
+          source: IconSource.builtin,
+          key: 'device_radio',
+          color: IconColor.blue,
+        ),
+      ),
+      throwsA(isA<InvalidIconSelectionException>()),
+    );
+  });
+
   test('custom category and icon metadata survive database restart', () async {
     await database.close();
     final directory = await Directory.systemTemp.createTemp(
