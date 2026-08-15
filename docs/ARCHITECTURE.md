@@ -1,6 +1,6 @@
 # Battery Tracker — Architecture Guide
 
-**Architecture baseline:** Phase 3 icon system, 2026-08-15
+**Architecture baseline:** Phase 4 Battery Types, 2026-08-15
 **Initial runtime:** Windows 11 desktop  
 **Portability targets:** Android, iPhone/iPad, and macOS
 
@@ -91,6 +91,14 @@ Required transaction groups include:
 
 Any fatal failure rolls back the complete group and records no success activity.
 
+### Battery Type lifecycle
+
+`BatteryTypeRepository` is the feature boundary; `DriftBatteryTypeRepository` owns persistence and `BatteryTypeCatalogController` owns list/filter/selection state. A `BatteryTypeDraft` trims optional text, requires a type name, rejects non-finite or non-positive voltage/capacity, and requires capacity and capacity unit together. Chemistry and capacity-unit controls are editable suggestions, so the domain stores custom values unchanged rather than imposing lookup tables.
+
+Creation generates one `PermanentId` UUID. Updates retain it. Active names are unique case-insensitively; inactive records may retain their names, but reactivation first checks the active-name rule and reports a typed conflict if another active record now owns the name. Every create, update, deactivate, and reactivate operation validates the Battery-scope `IconSelection`, writes inside a single Drift transaction, and appends an activity-log event. A deactivation event includes exact Batteries, Battery Sets, and Devices reference counts in its metadata.
+
+Battery Type deactivation is soft (`deactivated_at`), not delete/purge. It never rewrites the foreign-key references from Batteries, Battery Sets, or Device requirements. The UI obtains those exact counts before the confirmation dialog, communicates that existing references stay connected, and explains that new records will not use the type by default. Reactivation remains explicit and cannot silently resolve a conflicting name.
+
 ## History model
 
 Memberships and assignments are temporal rows with start and end timestamps. Removal closes the current row; it does not overwrite who/what/when. Recorded Charges are append-only. A separate activity log stores user-readable/system events and a shared operation UUID groups rows created by one bulk or Set action.
@@ -125,6 +133,8 @@ Imported files are validated, copied to managed storage, and then committed to t
 Custom icons have permanent UUIDs. `DriftIconRepository` persists categories and metadata, records recent selections and activity, counts live references across Batteries, Battery Sets, Devices, and Battery Types, and replaces those references in one SQLite transaction before deactivation. Custom files live at `custom_icons/{icon-uuid}/source-{revision-uuid}.{png|svg}`. Replacing source content preserves the icon UUID and removes the superseded managed file only after the database update succeeds.
 
 `LocalCustomIconStorage` validates signatures, file type, size, UTF-8 SVG structure, and rejects scripts, event handlers, entity/doctype declarations, image elements, and external/data references. `IconVisual` renders packaged and managed SVG/PNG sources with optional color tint and always falls back to the owner default when a managed file is missing or unreadable.
+
+Battery Types use the existing Battery-scope picker and default to the packaged Generic Battery icon/color. Their icon/color are suggestions for later Battery creation, not an override of a Battery record's selected visual. `BatteryTypeIcon` resolves built-in/custom selections through the registry and falls back to the Battery default if a custom icon cannot be found, so no broken visual is rendered.
 
 Riverpod's `IconCatalogController` exposes scoped Built-In, Custom, Recent, category, and text filters to both the reusable `IconPickerDialog` and Settings `IconLibraryPage`. `FileSelectionService` returns only platform-neutral file URIs; `FileSelectorFileSelectionService` is the replaceable native-dialog adapter. Feature/domain layers never import plugin types or Windows APIs.
 

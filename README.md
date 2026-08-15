@@ -4,7 +4,7 @@ Battery Tracker is an offline-first rechargeable-battery inventory and device-ma
 
 The initial target is **Windows 11**. The architecture is intended to remain portable to Android, iPhone/iPad, and macOS.
 
-> Development status: Phase 3, the icon-first visual system, is complete. Phase 4 Battery Types is next. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
+> Development status: Phase 4, Battery Types, is complete. Phase 5 Battery Inventory is next. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
 
 ## Core Version 1 scope
 
@@ -140,6 +140,14 @@ Settings → Icon Library provides 54 packaged SVG icons with Battery, Battery S
 
 Custom PNG and SVG imports receive permanent UUIDs and are copied into application-managed storage. SVG scripts and external content are rejected. Editing metadata or replacing a file never changes the custom icon UUID. In-use deletion reports the reference count and requires an explicit replacement icon or owner defaults; a missing custom file renders the owner default instead of a broken image.
 
+## Battery Types
+
+Battery Types are reusable, user-managed specifications. Each record has a required, case-insensitively unique active type name; optional description, chemistry, physical size, and notes; optional positive default voltage; an optional positive default capacity paired with a required capacity unit; and a suggested Battery-scope icon and color. Chemistry suggestions (NiMH, NiCd, Li-ion, LiPo, LiFePO4, Lead Acid, Proprietary, and Other) and capacity-unit suggestions (mAh, Ah, and Wh) are editable text suggestions, not closed lists.
+
+The form defaults its visual suggestion to the built-in Generic Battery icon. The suggestion is not a forced inventory visual: future Battery records retain the icon-first rule and can select their own icon and color. A missing, unreadable, or inactive custom suggested icon renders the Battery default rather than a broken image.
+
+A Battery Type receives a permanent UUID when created; editing never changes it. The page supports searchable Active, Inactive, and All views; it searches name, chemistry, physical size, and description. Deactivation is a confirmed, reference-preserving action. The dialog states the exact current usage as Batteries, Battery Sets, and Devices, then explains that existing references remain connected while new records will not use the type by default. Reactivation is also confirmed and refuses a name collision with another active type. Create, update, deactivate, and reactivate each run in a SQLite transaction and append a typed activity event; deactivation activity includes the three usage counts.
+
 ## Data identity
 
 Permanent UUIDs are the authoritative identity for Batteries, Battery Sets, Devices, and Custom Icons.
@@ -200,7 +208,7 @@ flutter build windows
 
 The complete acceptance scenarios are in `Battery_Tracker_Master_Codex_Prompt.md`.
 
-The current 74-test suite covers the Phase 2 foundation plus packaged icon completeness, search/default/fallback resolution, color validation, managed PNG/SVG safety, UUID/restart persistence, transactional reference replacement and rollback, chooser behavior, Light/Dark and narrow-window rendering, and the complete Settings Icon Library workflow.
+The current 131-test suite covers the foundation and icon system plus Battery Type validation, Drift-backed CRUD/restart persistence, UUID stability, case-insensitive active-name and reactivation conflicts, reference-preserving deactivation with exact usage metadata, activity events and transaction rollback, controller refresh behavior, form errors/editable suggestions, icon fallback, and responsive page workflows.
 
 ## Version
 
@@ -218,4 +226,4 @@ See `docs/IMPLEMENTATION_PLAN.md`.
 
 On the inspected Windows workstation, Flutter is installed at `C:\Users\jay15\Develop\flutter` but is not on `PATH`. The repository scripts locate that installation automatically. Flutter detects Visual Studio Professional 2026 with its Windows C++ toolchain, and the Phase 3 Windows Release build succeeds and passes repeated launch checks.
 
-The current Codex workspace is under OneDrive and inherits a delete-deny ACL that prevents Flutter from refreshing generated `build/` and Apple `ephemeral/` directories. Verification can run from a temporary non-OneDrive snapshot without changing product code. A normal local checkout without that ACL should use the standard commands above.
+The current Codex workspace is under OneDrive and inherits a delete-deny ACL that prevents Flutter from refreshing generated `build/` and Apple `ephemeral/` directories. Phase 4 final verification ran in the linked normal-ACL TEMP worktree outside the OneDrive checkout. A normal local checkout without that ACL should use the standard commands above. Visual Studio warns when a build output is under `%TEMP%`; the Phase 4 Release build and both five-second launch checks nevertheless completed successfully.

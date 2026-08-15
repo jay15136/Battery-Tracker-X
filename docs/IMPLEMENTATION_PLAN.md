@@ -2,7 +2,7 @@
 
 ## Status
 
-**Project stage:** Phase 3 complete; Phase 4 is next
+**Project stage:** Phase 4 Battery Types complete; Phase 5 Battery Inventory is next
 **Target:** Windows 11 first, cross-platform architecture  
 **Version:** 0.1.0  
 **Authoritative requirements:** `Battery_Tracker_Master_Codex_Prompt.md`
@@ -45,6 +45,7 @@ This is a living plan. Codex must update it as implementation proceeds.
 - A fresh temporary snapshot with normal ACLs completed `flutter pub get`, formatting, code generation, analysis, and all 28 tests. Generated Drift source and the schema snapshot matched the checked-in artifacts byte-for-byte.
 - `flutter build windows --no-pub` produced `build\windows\x64\runner\Release\battery_tracker.exe`. That executable remained healthy for five seconds on each of two launch attempts.
 - Phase 3 verification from a refreshed normal-ACL snapshot completed dependency resolution, clean formatting, clean static analysis, all 74 tests, and a Windows Release build. The final executable remained healthy for five seconds on each of two launch attempts; generated Drift source and schema version 1 remained byte-for-byte unchanged.
+- Phase 4 final verification ran in the linked normal-ACL TEMP worktree, verified outside the OneDrive checkout. It restored the built-in icon asset declaration in `pubspec.yaml` before generation, then completed `flutter pub get`, `dart run build_runner build`, formatting/check, `flutter analyze --no-pub`, all 131 tests, and `flutter build windows --release --no-pub`. The generated Drift source SHA-256 remained `50FC69A828D9175E9697C62AA810D28BB37F5EA0FB4B55B660E37AC040631CB1` and schema v1 remained `525A1F93C1DE420CE3A9C3C58AB286FDC7D0E5A016ED7D0AB8AFBF9A75448ACF`. The Release executable stayed alive for five seconds on both checked launches. MSBuild emitted only its expected TEMP-output warning.
 
 ---
 
@@ -178,24 +179,32 @@ Finalize architecture before feature implementation.
 
 # Phase 4 — Battery Types
 
-**Status:** Not started
+**Status:** Complete (2026-08-15)
 
 ## Scope
 
-- [ ] List
-- [ ] Add
-- [ ] Edit
-- [ ] Delete/deactivate rules
-- [ ] Validation
-- [ ] Suggested icon
-- [ ] Suggested icon color
-- [ ] Default voltage/capacity/chemistry
+- [x] List with searchable Active, Inactive, and All views
+- [x] Add and edit with persisted selection
+- [x] Confirmed, reference-preserving deactivation and explicit reactivation
+- [x] Domain/form validation and case-insensitive active-name uniqueness
+- [x] Suggested Battery-scope icon with safe fallback
+- [x] Suggested icon color
+- [x] Default voltage/capacity/chemistry, physical size, description, and notes
 
 ## Acceptance
 
-- [ ] CRUD persists
-- [ ] invalid records are rejected
-- [ ] suggested icon/color can be overridden
+- [x] CRUD/lifecycle persists through real Drift/SQLite and restart tests
+- [x] Invalid records are rejected with field-level messages
+- [x] Suggested icon/color can be selected or overridden and never forces a Battery visual
+- [x] UUID remains stable; deactivation preserves all Battery, Set, and Device references
+- [x] Lifecycle writes are transactional and append activity events with deactivation usage metadata
+
+## Phase 4 implementation and acceptance evidence
+
+- `BatteryTypeDraft` trims optional values, requires a name, rejects non-finite/non-positive defaults, and requires capacity/unit together. The chemistry/unit suggestion controls are editable and preserve custom values.
+- `DriftBatteryTypeRepository` enforces active case-insensitive names, validates Battery-scope icon selections, generates an immutable UUID once, soft-deactivates without mutating references, blocks conflicting reactivation, and records typed lifecycle activity in the same transaction.
+- The management page uses a responsive list/detail layout, concise logged failures, field-level validation, exact usage-count confirmation, and Generic Battery fallback for missing custom suggestions.
+- Final fresh evidence: `flutter pub get` exit 0; `dart run build_runner build` exit 0 with 0 outputs; format check exit 0 with 0 changed files; analysis exit 0 with `No issues found!`; `flutter test --no-pub` exit 0 with 131 passing tests; Windows Release build exit 0. Artifact hashes are recorded in Environment notes above. The Release executable was `build\windows\x64\runner\Release\battery_tracker.exe`; PIDs 8680 and 11284 each remained alive after five seconds and were stopped by exact PID.
 
 ---
 
@@ -560,6 +569,7 @@ Record decisions below as they are made.
 | 2026-08-15 | Central immutable built-in icon catalog plus UUID custom records | Gives every owner a stable icon-first identity while allowing safe user extension. | Built-ins use logical keys; custom icons use permanent UUIDs and managed relative paths. |
 | 2026-08-15 | `flutter_svg` plus validated managed SVG/PNG storage | Supports packaged and user-imported cross-platform icons without storing bytes in SQLite. | SVG imports reject scripts/external content; missing files render owner defaults. |
 | 2026-08-15 | `file_selector` only behind `FileSelectionService` | Uses maintained native dialogs without leaking plugin values into features or domain models. | Windows, Android, iOS, and macOS adapters remain replaceable at the service boundary. |
+| 2026-08-15 | Battery Types are soft-deactivated reusable definitions | Existing inventory references must retain their historical/current meaning; an active-name collision must not be silently resolved. | Usage is counted before confirmation, existing foreign keys remain untouched, and reactivation performs the active-name check. |
 
 ---
 
@@ -576,9 +586,9 @@ Record decisions below as they are made.
 
 # Current next action
 
-1. Begin Phase 4 with the Battery Type repository and validation rules.
-2. Reuse the Phase 3 icon chooser for suggested Battery Type icon/color without coupling Battery Types to presentation widgets.
-3. Preserve permanent UUIDs, deactivation semantics, and real restart persistence in Battery Type CRUD.
+1. Begin Phase 5 Battery Inventory with its permanent UUID-backed Battery record and editable user-facing Battery ID.
+2. Reuse Battery Type specifications and suggested icon/color as defaults only; allow every Battery record to override them and remain icon-first.
+3. Add real repository persistence, sequential-ID preview/duplicate rules, and restart/UUID regression tests before inventory UI expansion.
 
 ## Tooling maintenance
 

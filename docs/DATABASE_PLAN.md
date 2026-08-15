@@ -1,6 +1,6 @@
 # Battery Tracker — Version 1 Database Plan
 
-**Decision status:** Phase 3 executable schema version 1; icon tables operational
+**Decision status:** Phase 4 Battery Types operational on executable schema version 1
 **Engine/access:** SQLite through Drift  
 **Initial schema version:** 1
 
@@ -38,6 +38,10 @@ Constraints/indexes:
 - case-insensitive unique active `type_name`
 - non-negative default voltage/capacity
 - icon source limited to `builtin` or `custom`
+
+Phase 4 uses this existing version-1 table unchanged. `uuid` is the permanent identity and remains stable across updates, deactivation, and reactivation. `deactivated_at` preserves references held by `batteries.battery_type_id`, `battery_sets.battery_type_id`, and `devices.required_battery_type_id`; normal workflows never delete or null those references. The repository counts all three before deactivation and records the counts in `activity_log` metadata. Reactivation is refused when a different active row has the same case-insensitive name.
+
+Default voltage and capacity are application-validated positive finite values. Capacity and its unit are both present or both null. Chemistry and unit are plain user text so the UI's suggestions remain editable. Suggested icon fields are validated against the Battery scope, default to the Generic Battery icon/color in the form, and remain suggestions rather than forced values for later Battery records.
 
 ### `battery_batches`
 
@@ -186,6 +190,7 @@ File workflows use a staging directory plus database transaction. Finalization f
 - Do not use drop-and-recreate for user upgrades.
 - Tests open version 1 from empty and upgrade every retained prior snapshot.
 - Tests verify UUIDs, membership/assignment history, Recorded Charges, settings, and relative asset references survive.
+- Phase 4 adds no table, column, index, trigger, or migration. The schema remains version 1; final regeneration confirmed both `app_database.g.dart` and `schema_v1.json` match their pre-generation SHA-256 values.
 
 ## Backup consistency
 
