@@ -5,6 +5,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/widgets/app_empty_state.dart';
 import '../../core/widgets/app_page_scaffold.dart';
 import '../../features/dashboard/presentation/dashboard_page.dart';
+import '../../features/battery_types/presentation/battery_types_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import 'app_destination.dart';
 import 'navigation_controller.dart';
@@ -140,6 +141,7 @@ class _DestinationContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (destination) {
       AppDestination.dashboard => const DashboardPage(),
+      AppDestination.batteryTypes => const BatteryTypesPage(),
       AppDestination.settings => const SettingsPage(),
       _ => AppPageScaffold(
           title: destination.label,

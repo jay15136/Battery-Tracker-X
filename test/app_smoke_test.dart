@@ -1,10 +1,21 @@
+import 'dart:io';
+
 import 'package:battery_tracker/app/app_providers.dart';
 import 'package:battery_tracker/app/battery_tracker_app.dart';
+import 'package:battery_tracker/core/database/app_database.dart';
+import 'package:battery_tracker/core/identity/permanent_id.dart';
+import 'package:battery_tracker/core/logging/app_log_service.dart';
+import 'package:battery_tracker/features/battery_types/data/drift_battery_type_repository.dart';
+import 'package:battery_tracker/features/icons/data/built_in_icon_registry.dart';
+import 'package:battery_tracker/features/icons/data/drift_icon_repository.dart';
+import 'package:battery_tracker/features/icons/domain/icon_registry.dart';
 import 'package:battery_tracker/features/settings/domain/app_settings_repository.dart';
 import 'package:battery_tracker/features/settings/domain/theme_preference.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logging/logging.dart';
 
 void main() {
   testWidgets('application shell renders all primary destinations',
@@ -44,6 +55,22 @@ void main() {
     expect(find.text('No batteries have been added yet.'), findsOneWidget);
   });
 
+  testWidgets('Battery Types destination renders its management page',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('destination-batteryTypes')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('battery-types-page')), findsOneWidget);
+    expect(find.text('No Battery Types yet.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('empty-state-panel')), findsNothing);
+  });
+
   testWidgets('appearance control persists and applies Dark mode',
       (tester) async {
     await _useDesktopSurface(tester);
@@ -60,6 +87,51 @@ void main() {
     expect(app.themeMode, ThemeMode.dark);
     expect(repository.savedPreferences, [ThemePreference.dark]);
   });
+}
+
+final class _AppFixture {
+  _AppFixture({required this.root, required this.database, required this.app});
+
+  final Directory root;
+  final AppDatabase database;
+  final Widget app;
+
+  static Future<_AppFixture> create() async {
+    final root = Directory.systemTemp.createTempSync('battery-app-smoke-');
+    final database = AppDatabase.forTesting(NativeDatabase.memory());
+    await database.customSelect('SELECT 1').getSingle();
+    final ids = _Ids();
+    final icons = DriftIconRepository(
+      database: database,
+      idGenerator: ids,
+      builtInRegistry: IconRegistry(builtIns: BuiltInIconRegistry.definitions),
+    );
+    final types = DriftBatteryTypeRepository(
+      database: database,
+      idGenerator: ids,
+      iconRepository: icons,
+    );
+    return _AppFixture(
+      root: root,
+      database: database,
+      app: ProviderScope(
+        overrides: [
+          appSettingsRepositoryProvider
+              .overrideWithValue(_MemorySettingsRepository()),
+          applicationSupportRootProvider.overrideWithValue(root.uri),
+          iconRepositoryProvider.overrideWithValue(icons),
+          batteryTypeRepositoryProvider.overrideWithValue(types),
+          appLogServiceProvider.overrideWithValue(_LogService()),
+        ],
+        child: const BatteryTrackerApp(),
+      ),
+    );
+  }
+
+  Future<void> close() async {
+    await database.close();
+    await root.delete(recursive: true);
+  }
 }
 
 Future<void> _useDesktopSurface(WidgetTester tester) async {
@@ -87,5 +159,27 @@ final class _MemorySettingsRepository implements AppSettingsRepository {
   Future<void> saveThemePreference(ThemePreference preference) async {
     savedPreferences.add(preference);
     this.preference = preference;
+  }
+}
+
+final class _LogService implements AppLogService {
+  @override
+  Future<void> close() async {}
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Logger logger(String scope) => Logger('test.$scope');
+}
+
+final class _Ids implements PermanentIdGenerator {
+  var _next = 1;
+
+  @override
+  PermanentId next() {
+    final tail = _next.toString().padLeft(12, '0');
+    _next++;
+    return PermanentId.parse('93000000-0000-4000-8000-$tail');
   }
 }
