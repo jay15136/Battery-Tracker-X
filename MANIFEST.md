@@ -31,6 +31,7 @@ Generated files should be updated through Flutter tooling and reviewed as normal
 - `lib/core/` — identity, database contracts, storage values, theme, logging, and utilities
 - `lib/features/` — feature-first modules for all Version 1 capabilities
 - `lib/services/` — platform and cross-cutting service contracts/adapters
+- `drift_schemas/` — immutable Drift schema snapshots used for migration review and tests
 - `test/` — unit, repository, migration, and widget tests
 - `scripts/` — repeatable bootstrap and verification commands
 

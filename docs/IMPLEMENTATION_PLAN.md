@@ -2,7 +2,7 @@
 
 ## Status
 
-**Project stage:** Phase 1 complete; Phase 2 not started  
+**Project stage:** Phase 2 complete; Phase 3 is next
 **Target:** Windows 11 first, cross-platform architecture  
 **Version:** 0.1.0  
 **Authoritative requirements:** `Battery_Tracker_Master_Codex_Prompt.md`
@@ -26,12 +26,12 @@ This is a living plan. Codex must update it as implementation proceeds.
 - [x] Dart available through Flutter
 - [x] `flutter doctor -v` reviewed
 - [x] Windows desktop development enabled
-- [ ] Visual Studio C++ desktop workload available
+- [x] Visual Studio C++ desktop workload available
 - [x] `flutter pub get` succeeds
-- [ ] starter app runs on Windows
+- [x] starter app runs on Windows
 - [x] `flutter analyze` succeeds
 - [x] `flutter test` succeeds
-- [ ] `flutter build windows` succeeds
+- [x] `flutter build windows` succeeds
 
 ### Environment notes
 
@@ -39,11 +39,11 @@ This is a living plan. Codex must update it as implementation proceeds.
 - Flutter 3.47.0 stable and Dart 3.13.0 are installed at `C:\Users\jay15\Develop\flutter`.
 - Flutter and Dart are not currently on `PATH`. Repository PowerShell scripts automatically resolve the SDK through `BATTERY_TRACKER_FLUTTER_ROOT`, `PATH`, per-user folders, or common machine folders.
 - Windows desktop support is enabled and a Windows device is detected.
-- Visual Studio is not installed. `flutter doctor -v` requires Visual Studio with the Desktop development with C++ workload.
+- Flutter detects Visual Studio Professional 2026 18.9.0 and Windows SDK 10.0.26100.0; the required Windows C++ toolchain is available.
 - Android SDK is not installed. This does not block the initial Windows-first phase, but it blocks future Android builds.
 - The Codex OneDrive workspace inherits an `Everyone: Deny DeleteSubdirectoriesAndFiles` ACL. Flutter cannot refresh ignored `build/` and Apple `ephemeral/` directories there.
-- A fresh temporary snapshot with normal ACLs completed `flutter pub get`, formatting, analysis, and all 11 tests. This verifies the same source/lockfile without changing product configuration or disabling Swift Package Manager.
-- `flutter build windows --no-pub` was attempted in that snapshot and stopped with `Unable to find suitable Visual Studio toolchain.`
+- A fresh temporary snapshot with normal ACLs completed `flutter pub get`, formatting, code generation, analysis, and all 28 tests. Generated Drift source and the schema snapshot matched the checked-in artifacts byte-for-byte.
+- `flutter build windows --no-pub` produced `build\windows\x64\runner\Release\battery_tracker.exe`. That executable remained healthy for five seconds on each of two launch attempts.
 
 ---
 
@@ -92,34 +92,44 @@ Finalize architecture before feature implementation.
 - Added tested `PermanentId`/UUID generation, managed relative-path validation, and contiguous migration metadata.
 - Added database transaction and platform-service contracts for storage, file selection, camera, images, QR, labels, printing, backup, import, and export.
 - Selected Riverpod, Drift, UUID, path-provider, and logging foundations; later native feature packages remain phase-scoped and must be revalidated when added.
-- Phase 1 verification: formatting clean, analysis clean, 11 tests passed. Windows build is environment-blocked by the missing Visual Studio toolchain.
+- Phase 1 verification at completion: formatting clean, analysis clean, and 11 tests passed. Windows build verification was completed during Phase 2 after the toolchain became available.
 
 ---
 
 # Phase 2 — Project Foundation
 
-**Status:** Not started
+**Status:** Complete (2026-08-15)
 
 ## Scope
 
-- [ ] Flutter project generated
-- [ ] Windows target works
-- [ ] App shell
-- [ ] Navigation
-- [ ] Light/Dark/System themes
-- [ ] Logging
-- [ ] Configuration
-- [ ] SQLite initialization
-- [ ] Migration runner
-- [ ] Shared UI patterns
+- [x] Flutter project generated
+- [x] Windows target works
+- [x] App shell
+- [x] Navigation
+- [x] Light/Dark/System themes
+- [x] Logging
+- [x] Configuration
+- [x] SQLite initialization
+- [x] Migration runner
+- [x] Shared UI patterns
 
 ## Acceptance
 
-- [ ] Windows app launches
-- [ ] app survives restart
-- [ ] theme selection works
-- [ ] database initializes
-- [ ] tests run
+- [x] Windows app launches
+- [x] app survives restart
+- [x] theme selection works
+- [x] database initializes
+- [x] tests run
+
+## Phase 2 implementation notes
+
+- Added application bootstrap that resolves platform application-support storage, starts bounded local logging, opens Drift's background production connection, runs migrations, verifies foreign keys, and injects dependencies through Riverpod.
+- Implemented the full 20-table normalized Version 1 schema, constraints, partial unique indexes, lookup indexes, UTC text timestamps, transaction adapter, generated typed access code, and `drift_schemas/schema_v1.json`.
+- Implemented Drift-backed appearance persistence with System, Light, and Dark modes; tests close and reopen a real SQLite file to verify persistence.
+- Replaced widget-owned navigation state with Riverpod-selected destinations and typed entity route intent.
+- Added a responsive Material 3 Windows shell, shared page/empty-state patterns, a first-run Dashboard state, and working appearance settings without hard-coded inventory statistics.
+- Added tests for configuration safety, bounded log rotation, database creation/constraints/defaults/rollback, production bootstrap, settings persistence, Riverpod controllers, navigation, and Light/Dark UI behavior.
+- Formatting is clean, `flutter analyze` reports no issues, and all 28 tests pass from a normal-ACL snapshot. The Windows Release build succeeds, and the built executable passed two launch checks.
 
 ---
 
@@ -543,7 +553,7 @@ Record decisions below as they are made.
 
 | ID | Issue | Severity | Status | Notes |
 |---|---|---|---|---|
-| ENV-001 | Visual Studio C++ desktop toolchain missing | Blocking Windows build | Open | Install Visual Studio 2022/Build Tools with Desktop development with C++ and its default components. |
+| ENV-001 | Visual Studio C++ desktop toolchain missing during initial inspection | Blocking Windows build | Resolved | Flutter now detects Visual Studio Professional 2026 18.9.0 with Windows SDK 10.0.26100.0; the Release build succeeds. |
 | ENV-002 | OneDrive workspace denies directory deletion | Blocks repeated Flutter generation in-place | Open | Use a normal local checkout or temporary verification snapshot; do not weaken project architecture or disable SwiftPM. |
 | ENV-003 | Flutter/Dart not on `PATH` | Low | Mitigated | Shared PowerShell discovery now finds `C:\Users\jay15\Develop\flutter`; `BATTERY_TRACKER_FLUTTER_ROOT` supports custom locations. |
 | ENV-004 | Android SDK missing | Blocks future Android verification | Deferred | Install before the first Android build milestone. |
@@ -552,9 +562,9 @@ Record decisions below as they are made.
 
 # Current next action
 
-1. Install Visual Studio with the Desktop development with C++ workload, then rerun `flutter doctor -v` and `flutter build windows`.
-2. Begin Phase 2 with Riverpod application setup, logging/configuration, and the executable Drift version 1 migration.
-3. Keep the application runnable and update this plan after each verified Phase 2 slice.
+1. Begin Phase 3 with the built-in Icon Registry and default Battery, Battery Set, and Device icons before adding any photograph workflow.
+2. Keep custom PNG/SVG files in application-managed storage and preserve logical permanent UUID references.
+3. Verify icon-only records, color persistence, safe replacement/deletion, and missing/deprecated fallback before any photograph workflow begins.
 
 ## Tooling maintenance
 

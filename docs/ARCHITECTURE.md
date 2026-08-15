@@ -1,6 +1,6 @@
 # Battery Tracker — Architecture Guide
 
-**Architecture baseline:** Phase 1, 2026-08-15  
+**Architecture baseline:** Phase 2 foundation, 2026-08-15
 **Initial runtime:** Windows 11 desktop  
 **Portability targets:** Android, iPhone/iPad, and macOS
 
@@ -54,9 +54,9 @@ Use `drift` with `drift_flutter` and generated code from `drift_dev`/`build_runn
 - Migration tests cover a new database, upgrades from each supported prior schema, UUID preservation, history preservation, and foreign-key behavior.
 - Production opens the database in a background isolate where supported. Tests inject an in-memory executor.
 
-`MigrationRegistry` rejects missing/non-positive versions before a migration runner executes. The Phase 2 Drift adapter will map that registry to Drift's migration strategy.
+`MigrationRegistry` rejects missing/non-positive versions before `DriftMigrationRunner` maps the contiguous registry to Drift's migration strategy. Schema version 1 creates all 20 normalized tables, constraints, partial unique indexes, and lookup indexes. Its committed snapshot is `drift_schemas/schema_v1.json`.
 
-The database file is resolved beneath the platform application-support directory as `database/battery_tracker.sqlite`. The physical root is supplied by `AppDataDirectoryService`; it is never stored in a domain model.
+The production connection runs in Drift's background connection where supported. The database file is resolved beneath the platform application-support directory as `database/battery_tracker.sqlite`, and SQLite temporary work uses `database/tmp/`. The physical root is supplied by `AppDataDirectoryService`; it is never stored in a domain model.
 
 See `docs/DATABASE_PLAN.md` for the finalized Version 1 schema and transaction boundaries.
 
@@ -104,6 +104,7 @@ Soft deletion or deactivation protects records referenced by history. Destructiv
 ```text
 BatteryTracker/
   database/battery_tracker.sqlite
+  database/tmp/
   photos/batteries/{uuid}/
   photos/battery_sets/{uuid}/
   photos/devices/{uuid}/
@@ -131,15 +132,15 @@ Keep the current Material 3 `NavigationRail` shell and typed `AppDestination` va
 - History
 - Settings
 
-Riverpod owns selected destination and typed route intent in Phase 2. Detail/edit screens use Navigator routes. QR lookup creates a typed route intent after UUID resolution; URI parsing does not occur inside widgets.
+Riverpod owns the selected destination and typed entity route intent. Selecting a new primary destination clears stale detail intent. Detail/edit screens use Navigator routes. QR lookup creates a typed route intent after UUID resolution; URI parsing does not occur inside widgets.
 
 ## Appearance
 
-Material 3 supplies Light and Dark themes. Theme choice is a persisted setting with `system`, `light`, and `dark` values. Icons always have text identifiers, and color is supplemental rather than the sole identifier.
+Material 3 supplies Light and Dark themes. `ThemePreferenceController` loads and saves `system`, `light`, and `dark` through the Drift settings repository; the new value is exposed only after persistence succeeds. Icons always have text identifiers, and color is supplemental rather than the sole identifier.
 
 ## Logging and user-facing errors
 
-Use package `logging` behind a logging service. The Phase 2 adapter writes bounded local log files under `logs/` and may mirror records to the debug console in debug builds.
+`LocalFileLogService` uses package `logging` and writes scoped technical records to bounded, rotated local files under `logs/`.
 
 Application failures use typed exceptions/results. Presentation maps them to concise messages and never shows raw stack traces. Technical exceptions, causes, and stack traces go only to logs.
 

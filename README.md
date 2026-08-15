@@ -4,7 +4,7 @@ Battery Tracker is an offline-first rechargeable-battery inventory and device-ma
 
 The initial target is **Windows 11**. The architecture is intended to remain portable to Android, iPhone/iPad, and macOS.
 
-> Development status: Flutter projects reconciled; Phase 1 architecture complete; Phase 2 not started. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
+> Development status: Phase 2 foundation is complete and verified with a Windows Release build and launch checks. Phase 3, the icon-first visual system, is next. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
 
 ## Core Version 1 scope
 
@@ -32,9 +32,9 @@ The initial target is **Windows 11**. The architecture is intended to remain por
 
 ## Technology direction
 
-- Flutter
-- Dart
-- SQLite
+- Flutter with Material 3
+- Dart and Riverpod
+- SQLite through Drift
 - Local application-managed asset storage
 - Repository/data-access layer
 - Cross-platform service interfaces
@@ -113,6 +113,8 @@ flutter build windows
 │   ├── IMPLEMENTATION_PLAN.md
 │   ├── ARCHITECTURE.md
 │   └── DATABASE_PLAN.md
+├── drift_schemas/
+│   └── schema_v1.json
 ├── lib/
 │   ├── app/
 │   ├── core/
@@ -140,17 +142,38 @@ User-facing IDs such as `AA-001` remain editable and must not be used as immutab
 
 ## Local data
 
-The final implementation must document the actual operating-system storage locations for:
+Battery Tracker resolves an operating-system application-support directory at runtime and creates a `BatteryTracker` directory beneath it. On Windows this is under the current user's roaming application-data directory, normally `%APPDATA%\<publisher>\<product>\BatteryTracker`.
 
-- SQLite database
-- photographs
-- custom icons
-- backups
-- logs
+The implemented Phase 2 layout is:
+
+```text
+BatteryTracker/
+  database/battery_tracker.sqlite
+  database/tmp/
+  logs/battery_tracker.log
+```
+
+Later feature phases add:
+
+- `photos/`
+- `custom_icons/`
+- `label_templates/`
+- `backups/`
 
 Do not hard-code machine-specific absolute paths into persistent domain records.
 
-The selected logical layout is documented in `docs/ARCHITECTURE.md`. Physical paths are resolved at runtime beneath the platform application-support directory. SQLite stores only safe relative asset references.
+The selected logical layout is documented in `docs/ARCHITECTURE.md`. SQLite stores only safe relative asset references. The schema is created through migration version 1, enables foreign keys on every connection, and persists timestamps as UTC ISO-8601 text.
+
+## Database code generation
+
+Drift's generated database API and versioned schema snapshot are committed. After changing table definitions or migrations, regenerate and review them:
+
+```powershell
+dart run build_runner build
+dart run drift_dev schema dump lib\core\database\app_database.dart drift_schemas\schema_v1.json
+```
+
+Released migration snapshots must not be rewritten. Add the next contiguous migration and snapshot instead.
 
 ## Testing
 
@@ -171,6 +194,8 @@ flutter build windows
 
 The complete acceptance scenarios are in `Battery_Tracker_Master_Codex_Prompt.md`.
 
+Foundation tests cover configuration validation, bounded file logging, SQLite creation and constraints, foreign keys, transaction rollback, restart persistence, Riverpod theme state, typed navigation, theme UI, and production bootstrap.
+
 ## Version
 
 Initial application version:
@@ -183,8 +208,8 @@ Use semantic versioning.
 
 See `docs/IMPLEMENTATION_PLAN.md`.
 
-## Known starter limitation
+## Known environment limitations
 
-On the inspected Windows workstation, Flutter is installed at `C:\Users\jay15\Develop\flutter` but is not on `PATH`. The repository scripts now locate that installation automatically. Visual Studio with the Desktop development with C++ workload is not installed, so a Windows executable cannot be compiled until that prerequisite is added.
+On the inspected Windows workstation, Flutter is installed at `C:\Users\jay15\Develop\flutter` but is not on `PATH`. The repository scripts locate that installation automatically. Flutter detects Visual Studio Professional 2026 with its Windows C++ toolchain, and the Phase 2 Windows Release build succeeds.
 
 The current Codex workspace is under OneDrive and inherits a delete-deny ACL that prevents Flutter from refreshing generated `build/` and Apple `ephemeral/` directories. Verification can run from a temporary non-OneDrive snapshot without changing product code. A normal local checkout without that ACL should use the standard commands above.

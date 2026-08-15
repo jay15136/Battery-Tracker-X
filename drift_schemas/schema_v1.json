@@ -1,0 +1,3546 @@
+{
+  "_meta": {
+    "description": "This file contains a serialized version of schema entities for drift.",
+    "version": "1.3.0"
+  },
+  "options": {
+    "store_date_time_values_as_text": false
+  },
+  "entities": [
+    {
+      "id": 0,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "battery_types",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "type_name",
+            "getter_name": "typeName",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "description",
+            "getter_name": "description",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "chemistry",
+            "getter_name": "chemistry",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "default_voltage",
+            "getter_name": "defaultVoltage",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "default_capacity",
+            "getter_name": "defaultCapacity",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "capacity_unit",
+            "getter_name": "capacityUnit",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "physical_size",
+            "getter_name": "physicalSize",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "suggested_icon_source",
+            "getter_name": "suggestedIconSource",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'builtin\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "suggested_icon_key",
+            "getter_name": "suggestedIconKey",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'battery_generic\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "suggested_icon_color",
+            "getter_name": "suggestedIconColor",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'#607D8B\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "notes",
+            "getter_name": "notes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "deactivated_at",
+            "getter_name": "deactivatedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(type_name)) > 0)",
+          "CHECK (default_voltage IS NULL OR default_voltage >= 0)",
+          "CHECK (default_capacity IS NULL OR default_capacity >= 0)",
+          "CHECK (suggested_icon_source IN ('builtin', 'custom'))"
+        ]
+      }
+    },
+    {
+      "id": 1,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "battery_batches",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "batch_code",
+            "getter_name": "batchCode",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "description",
+            "getter_name": "description",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "purchase_date",
+            "getter_name": "purchaseDate",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "purchase_location",
+            "getter_name": "purchaseLocation",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "total_purchase_price",
+            "getter_name": "totalPurchasePrice",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "notes",
+            "getter_name": "notes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(batch_code)) > 0)",
+          "CHECK (total_purchase_price IS NULL OR total_purchase_price >= 0)"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "references": [
+        0,
+        1
+      ],
+      "type": "table",
+      "data": {
+        "name": "batteries",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "user_battery_id",
+            "getter_name": "userBatteryId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "battery_type_id",
+            "getter_name": "batteryTypeId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES battery_types (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES battery_types (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "battery_types",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "batch_id",
+            "getter_name": "batchId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES battery_batches (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES battery_batches (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "battery_batches",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "manufacturer",
+            "getter_name": "manufacturer",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "model",
+            "getter_name": "model",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "serial_number",
+            "getter_name": "serialNumber",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "custom_label",
+            "getter_name": "customLabel",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "chemistry",
+            "getter_name": "chemistry",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "nominal_voltage",
+            "getter_name": "nominalVoltage",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "capacity",
+            "getter_name": "capacity",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "capacity_unit",
+            "getter_name": "capacityUnit",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "rechargeable",
+            "getter_name": "rechargeable",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"rechargeable\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"rechargeable\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "purchase_date",
+            "getter_name": "purchaseDate",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "purchase_location",
+            "getter_name": "purchaseLocation",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "purchase_price",
+            "getter_name": "purchasePrice",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "total_package_price",
+            "getter_name": "totalPackagePrice",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "per_battery_price",
+            "getter_name": "perBatteryPrice",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "warranty_expiration",
+            "getter_name": "warrantyExpiration",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "status",
+            "getter_name": "status",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'Available\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "condition",
+            "getter_name": "condition",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'New\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "condition_note",
+            "getter_name": "conditionNote",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "notes",
+            "getter_name": "notes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "icon_source",
+            "getter_name": "iconSource",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'builtin\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "icon_key",
+            "getter_name": "iconKey",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'battery_generic\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "icon_color",
+            "getter_name": "iconColor",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'#607D8B\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "preferred_primary_visual",
+            "getter_name": "preferredPrimaryVisual",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'icon\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "estimated_charge_percent",
+            "getter_name": "estimatedChargePercent",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "retired_at",
+            "getter_name": "retiredAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "retirement_reason",
+            "getter_name": "retirementReason",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(user_battery_id)) > 0)",
+          "CHECK (nominal_voltage IS NULL OR nominal_voltage >= 0)",
+          "CHECK (capacity IS NULL OR capacity >= 0)",
+          "CHECK (purchase_price IS NULL OR purchase_price >= 0)",
+          "CHECK (total_package_price IS NULL OR total_package_price >= 0)",
+          "CHECK (per_battery_price IS NULL OR per_battery_price >= 0)",
+          "CHECK (estimated_charge_percent IS NULL OR (estimated_charge_percent BETWEEN 0 AND 100))",
+          "CHECK (icon_source IN ('builtin', 'custom'))",
+          "CHECK (preferred_primary_visual IN ('icon', 'photo'))"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "references": [
+        0
+      ],
+      "type": "table",
+      "data": {
+        "name": "battery_sets",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "user_set_id",
+            "getter_name": "userSetId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "battery_type_id",
+            "getter_name": "batteryTypeId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES battery_types (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES battery_types (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "battery_types",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "description",
+            "getter_name": "description",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "notes",
+            "getter_name": "notes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "icon_source",
+            "getter_name": "iconSource",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'builtin\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "icon_key",
+            "getter_name": "iconKey",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'battery_set_generic\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "icon_color",
+            "getter_name": "iconColor",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'#607D8B\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "preferred_primary_visual",
+            "getter_name": "preferredPrimaryVisual",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'icon\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "deactivated_at",
+            "getter_name": "deactivatedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(user_set_id)) > 0)",
+          "CHECK (length(trim(name)) > 0)",
+          "CHECK (icon_source IN ('builtin', 'custom'))",
+          "CHECK (preferred_primary_visual IN ('icon', 'photo'))"
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "references": [
+        2,
+        3
+      ],
+      "type": "table",
+      "data": {
+        "name": "battery_set_memberships",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "battery_id",
+            "getter_name": "batteryId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES batteries (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES batteries (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "batteries",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "battery_set_id",
+            "getter_name": "batterySetId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES battery_sets (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES battery_sets (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "battery_sets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "added_at",
+            "getter_name": "addedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "removed_at",
+            "getter_name": "removedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "notes",
+            "getter_name": "notes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "operation_uuid",
+            "getter_name": "operationUuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (removed_at IS NULL OR removed_at >= added_at)"
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "references": [
+        0
+      ],
+      "type": "table",
+      "data": {
+        "name": "devices",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "category",
+            "getter_name": "category",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "manufacturer",
+            "getter_name": "manufacturer",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "model",
+            "getter_name": "model",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "serial_number",
+            "getter_name": "serialNumber",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "location",
+            "getter_name": "location",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "description",
+            "getter_name": "description",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "notes",
+            "getter_name": "notes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "required_battery_type_id",
+            "getter_name": "requiredBatteryTypeId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES battery_types (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES battery_types (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "battery_types",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "required_battery_quantity",
+            "getter_name": "requiredBatteryQuantity",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "required_voltage",
+            "getter_name": "requiredVoltage",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "requirement_notes",
+            "getter_name": "requirementNotes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "icon_source",
+            "getter_name": "iconSource",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'builtin\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "icon_key",
+            "getter_name": "iconKey",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'device_generic\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "icon_color",
+            "getter_name": "iconColor",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'#607D8B\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "preferred_primary_visual",
+            "getter_name": "preferredPrimaryVisual",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'icon\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "deactivated_at",
+            "getter_name": "deactivatedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(name)) > 0)",
+          "CHECK (required_battery_quantity IS NULL OR required_battery_quantity > 0)",
+          "CHECK (required_voltage IS NULL OR required_voltage >= 0)",
+          "CHECK (icon_source IN ('builtin', 'custom'))",
+          "CHECK (preferred_primary_visual IN ('icon', 'photo'))"
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "references": [
+        2,
+        3,
+        5
+      ],
+      "type": "table",
+      "data": {
+        "name": "assignments",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "subject_type",
+            "getter_name": "subjectType",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "battery_id",
+            "getter_name": "batteryId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES batteries (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES batteries (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "batteries",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "battery_set_id",
+            "getter_name": "batterySetId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES battery_sets (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES battery_sets (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "battery_sets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "device_id",
+            "getter_name": "deviceId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES devices (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES devices (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "devices",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "source_set_assignment_id",
+            "getter_name": "sourceSetAssignmentId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES assignments (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES assignments (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "assignments",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "operation_uuid",
+            "getter_name": "operationUuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "assigned_at",
+            "getter_name": "assignedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "removed_at",
+            "getter_name": "removedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "notes",
+            "getter_name": "notes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "override_reason",
+            "getter_name": "overrideReason",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (subject_type IN ('battery', 'battery_set'))",
+          "CHECK ((subject_type = 'battery' AND battery_id IS NOT NULL AND battery_set_id IS NULL) OR (subject_type = 'battery_set' AND battery_id IS NULL AND battery_set_id IS NOT NULL))",
+          "CHECK (removed_at IS NULL OR removed_at >= assigned_at)"
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "references": [
+        3
+      ],
+      "type": "table",
+      "data": {
+        "name": "set_charge_records",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "battery_set_id",
+            "getter_name": "batterySetId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES battery_sets (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES battery_sets (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "battery_sets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "charged_at",
+            "getter_name": "chargedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "notes",
+            "getter_name": "notes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "operation_uuid",
+            "getter_name": "operationUuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": []
+      }
+    },
+    {
+      "id": 8,
+      "references": [
+        2,
+        7
+      ],
+      "type": "table",
+      "data": {
+        "name": "charge_records",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "battery_id",
+            "getter_name": "batteryId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES batteries (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES batteries (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "batteries",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "charged_at",
+            "getter_name": "chargedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "starting_charge_percent",
+            "getter_name": "startingChargePercent",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "ending_charge_percent",
+            "getter_name": "endingChargePercent",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "charger",
+            "getter_name": "charger",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "notes",
+            "getter_name": "notes",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "source_set_charge_id",
+            "getter_name": "sourceSetChargeId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES set_charge_records (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES set_charge_records (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "set_charge_records",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "bulk_operation_uuid",
+            "getter_name": "bulkOperationUuid",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (starting_charge_percent IS NULL OR (starting_charge_percent BETWEEN 0 AND 100))",
+          "CHECK (ending_charge_percent IS NULL OR (ending_charge_percent BETWEEN 0 AND 100))"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "media_assets",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "relative_path",
+            "getter_name": "relativePath",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "original_filename",
+            "getter_name": "originalFilename",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "mime_type",
+            "getter_name": "mimeType",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "byte_size",
+            "getter_name": "byteSize",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "checksum",
+            "getter_name": "checksum",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "width",
+            "getter_name": "width",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "height",
+            "getter_name": "height",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "missing_at",
+            "getter_name": "missingAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(relative_path)) > 0)",
+          "CHECK (byte_size >= 0)",
+          "CHECK (width IS NULL OR width > 0)",
+          "CHECK (height IS NULL OR height > 0)"
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "references": [
+        2,
+        9
+      ],
+      "type": "table",
+      "data": {
+        "name": "battery_photos",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "battery_id",
+            "getter_name": "batteryId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES batteries (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES batteries (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "batteries",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "media_asset_id",
+            "getter_name": "mediaAssetId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES media_assets (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES media_assets (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "media_assets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "is_primary",
+            "getter_name": "isPrimary",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"is_primary\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"is_primary\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "display_order",
+            "getter_name": "displayOrder",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "caption",
+            "getter_name": "caption",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "battery_id",
+          "media_asset_id"
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "references": [
+        3,
+        9
+      ],
+      "type": "table",
+      "data": {
+        "name": "battery_set_photos",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "battery_set_id",
+            "getter_name": "batterySetId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES battery_sets (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES battery_sets (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "battery_sets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "media_asset_id",
+            "getter_name": "mediaAssetId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES media_assets (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES media_assets (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "media_assets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "is_primary",
+            "getter_name": "isPrimary",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"is_primary\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"is_primary\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "display_order",
+            "getter_name": "displayOrder",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "caption",
+            "getter_name": "caption",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "battery_set_id",
+          "media_asset_id"
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "references": [
+        5,
+        9
+      ],
+      "type": "table",
+      "data": {
+        "name": "device_photos",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "device_id",
+            "getter_name": "deviceId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES devices (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES devices (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "devices",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "media_asset_id",
+            "getter_name": "mediaAssetId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES media_assets (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES media_assets (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "media_assets",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "is_primary",
+            "getter_name": "isPrimary",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"is_primary\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"is_primary\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "display_order",
+            "getter_name": "displayOrder",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "caption",
+            "getter_name": "caption",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "device_id",
+          "media_asset_id"
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "icon_categories",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "scope",
+            "getter_name": "scope",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "deactivated_at",
+            "getter_name": "deactivatedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(name)) > 0)",
+          "CHECK (scope IN ('battery', 'battery_set', 'device', 'general'))"
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "references": [
+        13
+      ],
+      "type": "table",
+      "data": {
+        "name": "custom_icons",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "category_id",
+            "getter_name": "categoryId",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES icon_categories (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES icon_categories (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "icon_categories",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "relative_path",
+            "getter_name": "relativePath",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "file_type",
+            "getter_name": "fileType",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "supports_color",
+            "getter_name": "supportsColor",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"supports_color\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"supports_color\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "deactivated_at",
+            "getter_name": "deactivatedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(name)) > 0)",
+          "CHECK (file_type IN ('png', 'svg'))"
+        ]
+      }
+    },
+    {
+      "id": 15,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "tags",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(name)) > 0)"
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "references": [
+        2,
+        15
+      ],
+      "type": "table",
+      "data": {
+        "name": "battery_tags",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "battery_id",
+            "getter_name": "batteryId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES batteries (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES batteries (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "batteries",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "tag_id",
+            "getter_name": "tagId",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "REFERENCES tags (id) ON DELETE RESTRICT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "REFERENCES tags (id) ON DELETE RESTRICT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "foreign_key": {
+                  "to": {
+                    "table": "tags",
+                    "column": "id"
+                  },
+                  "initially_deferred": false,
+                  "on_update": null,
+                  "on_delete": "restrict"
+                }
+              }
+            ]
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "battery_id",
+          "tag_id"
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "qr_label_templates",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "target_type",
+            "getter_name": "targetType",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "width_points",
+            "getter_name": "widthPoints",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "height_points",
+            "getter_name": "heightPoints",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "layout_json",
+            "getter_name": "layoutJson",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "deactivated_at",
+            "getter_name": "deactivatedAt",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(name)) > 0)",
+          "CHECK (target_type IN ('battery', 'battery_set', 'device'))",
+          "CHECK (width_points > 0)",
+          "CHECK (height_points > 0)"
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "activity_log",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "PRIMARY KEY AUTOINCREMENT",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "PRIMARY KEY AUTOINCREMENT"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "auto-increment"
+            ]
+          },
+          {
+            "name": "uuid",
+            "getter_name": "uuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "UNIQUE",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "UNIQUE"
+            },
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              "unique"
+            ]
+          },
+          {
+            "name": "event_type",
+            "getter_name": "eventType",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "entity_type",
+            "getter_name": "entityType",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "entity_uuid",
+            "getter_name": "entityUuid",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "related_entity_type",
+            "getter_name": "relatedEntityType",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "related_entity_uuid",
+            "getter_name": "relatedEntityUuid",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "operation_uuid",
+            "getter_name": "operationUuid",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "summary",
+            "getter_name": "summary",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "metadata_json",
+            "getter_name": "metadataJson",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'{}\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "occurred_at",
+            "getter_name": "occurredAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(event_type)) > 0)",
+          "CHECK (length(trim(entity_type)) > 0)",
+          "CHECK (length(trim(summary)) > 0)"
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "settings",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "setting_key",
+            "getter_name": "key",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "value",
+            "getter_name": "value",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "value_type",
+            "getter_name": "valueType",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "modified_at",
+            "getter_name": "modifiedAt",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": "_utcNow",
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const UtcDateTimeTextConverter()",
+              "dart_type_name": "DateTime"
+            }
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (length(trim(setting_key)) > 0)",
+          "CHECK (value_type IN ('string', 'integer', 'real', 'boolean', 'json'))"
+        ],
+        "explicit_pk": [
+          "setting_key"
+        ]
+      }
+    }
+  ],
+  "fixed_sql": [
+    {
+      "name": "battery_types",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"battery_types\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"type_name\" TEXT NOT NULL, \"description\" TEXT NULL, \"chemistry\" TEXT NULL, \"default_voltage\" REAL NULL, \"default_capacity\" REAL NULL, \"capacity_unit\" TEXT NULL, \"physical_size\" TEXT NULL, \"suggested_icon_source\" TEXT NOT NULL DEFAULT 'builtin', \"suggested_icon_key\" TEXT NOT NULL DEFAULT 'battery_generic', \"suggested_icon_color\" TEXT NOT NULL DEFAULT '#607D8B', \"notes\" TEXT NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, \"deactivated_at\" TEXT NULL, CHECK (length(trim(type_name)) > 0), CHECK (default_voltage IS NULL OR default_voltage >= 0), CHECK (default_capacity IS NULL OR default_capacity >= 0), CHECK (suggested_icon_source IN ('builtin', 'custom')));"
+        }
+      ]
+    },
+    {
+      "name": "battery_batches",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"battery_batches\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"batch_code\" TEXT NOT NULL, \"description\" TEXT NULL, \"purchase_date\" TEXT NULL, \"purchase_location\" TEXT NULL, \"total_purchase_price\" REAL NULL, \"notes\" TEXT NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, CHECK (length(trim(batch_code)) > 0), CHECK (total_purchase_price IS NULL OR total_purchase_price >= 0));"
+        }
+      ]
+    },
+    {
+      "name": "batteries",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"batteries\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"user_battery_id\" TEXT NOT NULL, \"name\" TEXT NULL, \"battery_type_id\" INTEGER NULL REFERENCES battery_types (id) ON DELETE RESTRICT, \"batch_id\" INTEGER NULL REFERENCES battery_batches (id) ON DELETE RESTRICT, \"manufacturer\" TEXT NULL, \"model\" TEXT NULL, \"serial_number\" TEXT NULL, \"custom_label\" TEXT NULL, \"chemistry\" TEXT NULL, \"nominal_voltage\" REAL NULL, \"capacity\" REAL NULL, \"capacity_unit\" TEXT NULL, \"rechargeable\" INTEGER NOT NULL DEFAULT 1 CHECK (\"rechargeable\" IN (0, 1)), \"purchase_date\" TEXT NULL, \"purchase_location\" TEXT NULL, \"purchase_price\" REAL NULL, \"total_package_price\" REAL NULL, \"per_battery_price\" REAL NULL, \"warranty_expiration\" TEXT NULL, \"status\" TEXT NOT NULL DEFAULT 'Available', \"condition\" TEXT NOT NULL DEFAULT 'New', \"condition_note\" TEXT NULL, \"notes\" TEXT NULL, \"icon_source\" TEXT NOT NULL DEFAULT 'builtin', \"icon_key\" TEXT NOT NULL DEFAULT 'battery_generic', \"icon_color\" TEXT NOT NULL DEFAULT '#607D8B', \"preferred_primary_visual\" TEXT NOT NULL DEFAULT 'icon', \"estimated_charge_percent\" INTEGER NULL, \"retired_at\" TEXT NULL, \"retirement_reason\" TEXT NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, \"deleted_at\" TEXT NULL, CHECK (length(trim(user_battery_id)) > 0), CHECK (nominal_voltage IS NULL OR nominal_voltage >= 0), CHECK (capacity IS NULL OR capacity >= 0), CHECK (purchase_price IS NULL OR purchase_price >= 0), CHECK (total_package_price IS NULL OR total_package_price >= 0), CHECK (per_battery_price IS NULL OR per_battery_price >= 0), CHECK (estimated_charge_percent IS NULL OR (estimated_charge_percent BETWEEN 0 AND 100)), CHECK (icon_source IN ('builtin', 'custom')), CHECK (preferred_primary_visual IN ('icon', 'photo')));"
+        }
+      ]
+    },
+    {
+      "name": "battery_sets",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"battery_sets\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"user_set_id\" TEXT NOT NULL, \"name\" TEXT NOT NULL, \"battery_type_id\" INTEGER NULL REFERENCES battery_types (id) ON DELETE RESTRICT, \"description\" TEXT NULL, \"notes\" TEXT NULL, \"icon_source\" TEXT NOT NULL DEFAULT 'builtin', \"icon_key\" TEXT NOT NULL DEFAULT 'battery_set_generic', \"icon_color\" TEXT NOT NULL DEFAULT '#607D8B', \"preferred_primary_visual\" TEXT NOT NULL DEFAULT 'icon', \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, \"deactivated_at\" TEXT NULL, \"deleted_at\" TEXT NULL, CHECK (length(trim(user_set_id)) > 0), CHECK (length(trim(name)) > 0), CHECK (icon_source IN ('builtin', 'custom')), CHECK (preferred_primary_visual IN ('icon', 'photo')));"
+        }
+      ]
+    },
+    {
+      "name": "battery_set_memberships",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"battery_set_memberships\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"battery_id\" INTEGER NOT NULL REFERENCES batteries (id) ON DELETE RESTRICT, \"battery_set_id\" INTEGER NOT NULL REFERENCES battery_sets (id) ON DELETE RESTRICT, \"added_at\" TEXT NOT NULL, \"removed_at\" TEXT NULL, \"notes\" TEXT NULL, \"operation_uuid\" TEXT NOT NULL, CHECK (removed_at IS NULL OR removed_at >= added_at));"
+        }
+      ]
+    },
+    {
+      "name": "devices",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"devices\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"name\" TEXT NOT NULL, \"category\" TEXT NULL, \"manufacturer\" TEXT NULL, \"model\" TEXT NULL, \"serial_number\" TEXT NULL, \"location\" TEXT NULL, \"description\" TEXT NULL, \"notes\" TEXT NULL, \"required_battery_type_id\" INTEGER NULL REFERENCES battery_types (id) ON DELETE RESTRICT, \"required_battery_quantity\" INTEGER NULL, \"required_voltage\" REAL NULL, \"requirement_notes\" TEXT NULL, \"icon_source\" TEXT NOT NULL DEFAULT 'builtin', \"icon_key\" TEXT NOT NULL DEFAULT 'device_generic', \"icon_color\" TEXT NOT NULL DEFAULT '#607D8B', \"preferred_primary_visual\" TEXT NOT NULL DEFAULT 'icon', \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, \"deactivated_at\" TEXT NULL, \"deleted_at\" TEXT NULL, CHECK (length(trim(name)) > 0), CHECK (required_battery_quantity IS NULL OR required_battery_quantity > 0), CHECK (required_voltage IS NULL OR required_voltage >= 0), CHECK (icon_source IN ('builtin', 'custom')), CHECK (preferred_primary_visual IN ('icon', 'photo')));"
+        }
+      ]
+    },
+    {
+      "name": "assignments",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"assignments\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"subject_type\" TEXT NOT NULL, \"battery_id\" INTEGER NULL REFERENCES batteries (id) ON DELETE RESTRICT, \"battery_set_id\" INTEGER NULL REFERENCES battery_sets (id) ON DELETE RESTRICT, \"device_id\" INTEGER NOT NULL REFERENCES devices (id) ON DELETE RESTRICT, \"source_set_assignment_id\" INTEGER NULL REFERENCES assignments (id) ON DELETE RESTRICT, \"operation_uuid\" TEXT NOT NULL, \"assigned_at\" TEXT NOT NULL, \"removed_at\" TEXT NULL, \"notes\" TEXT NULL, \"override_reason\" TEXT NULL, CHECK (subject_type IN ('battery', 'battery_set')), CHECK ((subject_type = 'battery' AND battery_id IS NOT NULL AND battery_set_id IS NULL) OR (subject_type = 'battery_set' AND battery_id IS NULL AND battery_set_id IS NOT NULL)), CHECK (removed_at IS NULL OR removed_at >= assigned_at));"
+        }
+      ]
+    },
+    {
+      "name": "set_charge_records",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"set_charge_records\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"battery_set_id\" INTEGER NOT NULL REFERENCES battery_sets (id) ON DELETE RESTRICT, \"charged_at\" TEXT NOT NULL, \"notes\" TEXT NULL, \"created_at\" TEXT NOT NULL, \"operation_uuid\" TEXT NOT NULL);"
+        }
+      ]
+    },
+    {
+      "name": "charge_records",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"charge_records\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"battery_id\" INTEGER NOT NULL REFERENCES batteries (id) ON DELETE RESTRICT, \"charged_at\" TEXT NOT NULL, \"starting_charge_percent\" INTEGER NULL, \"ending_charge_percent\" INTEGER NULL, \"charger\" TEXT NULL, \"notes\" TEXT NULL, \"source_set_charge_id\" INTEGER NULL REFERENCES set_charge_records (id) ON DELETE RESTRICT, \"bulk_operation_uuid\" TEXT NULL, \"created_at\" TEXT NOT NULL, CHECK (starting_charge_percent IS NULL OR (starting_charge_percent BETWEEN 0 AND 100)), CHECK (ending_charge_percent IS NULL OR (ending_charge_percent BETWEEN 0 AND 100)));"
+        }
+      ]
+    },
+    {
+      "name": "media_assets",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"media_assets\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"relative_path\" TEXT NOT NULL UNIQUE, \"original_filename\" TEXT NOT NULL, \"mime_type\" TEXT NOT NULL, \"byte_size\" INTEGER NOT NULL, \"checksum\" TEXT NOT NULL, \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, \"missing_at\" TEXT NULL, CHECK (length(trim(relative_path)) > 0), CHECK (byte_size >= 0), CHECK (width IS NULL OR width > 0), CHECK (height IS NULL OR height > 0));"
+        }
+      ]
+    },
+    {
+      "name": "battery_photos",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"battery_photos\" (\"battery_id\" INTEGER NOT NULL REFERENCES batteries (id) ON DELETE RESTRICT, \"media_asset_id\" INTEGER NOT NULL REFERENCES media_assets (id) ON DELETE RESTRICT, \"is_primary\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_primary\" IN (0, 1)), \"display_order\" INTEGER NOT NULL DEFAULT 0, \"caption\" TEXT NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, PRIMARY KEY (\"battery_id\", \"media_asset_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "battery_set_photos",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"battery_set_photos\" (\"battery_set_id\" INTEGER NOT NULL REFERENCES battery_sets (id) ON DELETE RESTRICT, \"media_asset_id\" INTEGER NOT NULL REFERENCES media_assets (id) ON DELETE RESTRICT, \"is_primary\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_primary\" IN (0, 1)), \"display_order\" INTEGER NOT NULL DEFAULT 0, \"caption\" TEXT NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, PRIMARY KEY (\"battery_set_id\", \"media_asset_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "device_photos",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"device_photos\" (\"device_id\" INTEGER NOT NULL REFERENCES devices (id) ON DELETE RESTRICT, \"media_asset_id\" INTEGER NOT NULL REFERENCES media_assets (id) ON DELETE RESTRICT, \"is_primary\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_primary\" IN (0, 1)), \"display_order\" INTEGER NOT NULL DEFAULT 0, \"caption\" TEXT NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, PRIMARY KEY (\"device_id\", \"media_asset_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "icon_categories",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"icon_categories\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"name\" TEXT NOT NULL, \"scope\" TEXT NOT NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, \"deactivated_at\" TEXT NULL, CHECK (length(trim(name)) > 0), CHECK (scope IN ('battery', 'battery_set', 'device', 'general')));"
+        }
+      ]
+    },
+    {
+      "name": "custom_icons",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"custom_icons\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"name\" TEXT NOT NULL, \"category_id\" INTEGER NULL REFERENCES icon_categories (id) ON DELETE RESTRICT, \"relative_path\" TEXT NOT NULL UNIQUE, \"file_type\" TEXT NOT NULL, \"supports_color\" INTEGER NOT NULL DEFAULT 0 CHECK (\"supports_color\" IN (0, 1)), \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, \"deactivated_at\" TEXT NULL, CHECK (length(trim(name)) > 0), CHECK (file_type IN ('png', 'svg')));"
+        }
+      ]
+    },
+    {
+      "name": "tags",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"tags\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"name\" TEXT NOT NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, CHECK (length(trim(name)) > 0));"
+        }
+      ]
+    },
+    {
+      "name": "battery_tags",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"battery_tags\" (\"battery_id\" INTEGER NOT NULL REFERENCES batteries (id) ON DELETE RESTRICT, \"tag_id\" INTEGER NOT NULL REFERENCES tags (id) ON DELETE RESTRICT, \"created_at\" TEXT NOT NULL, PRIMARY KEY (\"battery_id\", \"tag_id\"));"
+        }
+      ]
+    },
+    {
+      "name": "qr_label_templates",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"qr_label_templates\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"name\" TEXT NOT NULL, \"target_type\" TEXT NOT NULL, \"width_points\" REAL NOT NULL, \"height_points\" REAL NOT NULL, \"layout_json\" TEXT NOT NULL, \"created_at\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, \"deactivated_at\" TEXT NULL, CHECK (length(trim(name)) > 0), CHECK (target_type IN ('battery', 'battery_set', 'device')), CHECK (width_points > 0), CHECK (height_points > 0));"
+        }
+      ]
+    },
+    {
+      "name": "activity_log",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"activity_log\" (\"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"uuid\" TEXT NOT NULL UNIQUE, \"event_type\" TEXT NOT NULL, \"entity_type\" TEXT NOT NULL, \"entity_uuid\" TEXT NOT NULL, \"related_entity_type\" TEXT NULL, \"related_entity_uuid\" TEXT NULL, \"operation_uuid\" TEXT NULL, \"summary\" TEXT NOT NULL, \"metadata_json\" TEXT NOT NULL DEFAULT '{}', \"occurred_at\" TEXT NOT NULL, CHECK (length(trim(event_type)) > 0), CHECK (length(trim(entity_type)) > 0), CHECK (length(trim(summary)) > 0));"
+        }
+      ]
+    },
+    {
+      "name": "settings",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"settings\" (\"setting_key\" TEXT NOT NULL, \"value\" TEXT NOT NULL, \"value_type\" TEXT NOT NULL, \"modified_at\" TEXT NOT NULL, PRIMARY KEY (\"setting_key\"), CHECK (length(trim(setting_key)) > 0), CHECK (value_type IN ('string', 'integer', 'real', 'boolean', 'json')));"
+        }
+      ]
+    }
+  ]
+}

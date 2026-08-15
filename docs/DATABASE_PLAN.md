@@ -1,6 +1,6 @@
 # Battery Tracker — Version 1 Database Plan
 
-**Decision status:** Phase 1 baseline  
+**Decision status:** Phase 2 executable schema version 1
 **Engine/access:** SQLite through Drift  
 **Initial schema version:** 1
 
@@ -14,7 +14,7 @@
 - Prefer `deactivated_at`/`retired_at`/`deleted_at` markers to destructive deletion.
 - Store only application-managed relative asset paths.
 
-Every table has the smallest useful set of constraints in schema version 1. Drift model definitions and the executable initial migration are Phase 2 deliverables.
+Every table has the smallest useful set of constraints in schema version 1. Drift table definitions, executable migration/index creation, generated typed access code, and `drift_schemas/schema_v1.json` are implemented and committed together.
 
 ## Identity and shared columns
 
@@ -179,6 +179,7 @@ File workflows use a staging directory plus database transaction. Finalization f
 - Migration numbers start at 1 and are contiguous.
 - Never edit a released migration; add the next version.
 - Store Drift schema snapshots in version control.
+- Schema version 1 is recorded in `drift_schemas/schema_v1.json`.
 - Back up or checkpoint before a destructive transform.
 - Do not use drop-and-recreate for user upgrades.
 - Tests open version 1 from empty and upgrade every retained prior snapshot.

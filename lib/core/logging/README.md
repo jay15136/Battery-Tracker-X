@@ -1,3 +1,3 @@
 # Logging
 
-Structured technical logging. User-facing errors must remain separate from raw exception details.
+`LocalFileLogService` provides scoped structured technical logging through package `logging`. Records are written to bounded, rotated files under application-managed `logs/` storage. User-facing errors remain separate from raw exception details.
