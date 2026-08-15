@@ -15,6 +15,8 @@ import '../features/icons/data/drift_icon_repository.dart';
 import '../features/icons/data/local_custom_icon_storage.dart';
 import '../features/icons/domain/icon_registry.dart';
 import '../features/icons/domain/icon_repository.dart';
+import '../features/battery_types/data/drift_battery_type_repository.dart';
+import '../features/battery_types/domain/battery_type_repository.dart';
 import '../features/settings/data/drift_app_settings_repository.dart';
 import '../services/app_data_directory_service.dart';
 import '../services/file_selection_service.dart';
@@ -76,6 +78,11 @@ abstract final class AppBootstrap {
         logger: logService.logger('icons'),
       );
       await iconLibraryService.ensureDefaultCategories();
+      final batteryTypeRepository = DriftBatteryTypeRepository(
+        database: database,
+        idGenerator: idGenerator,
+        iconRepository: iconRepository,
+      );
 
       logService.logger('bootstrap').info('Battery Tracker initialized.');
       return AppDependencies(
@@ -86,6 +93,7 @@ abstract final class AppBootstrap {
         settingsRepository: settingsRepository,
         iconRepository: iconRepository,
         iconLibraryService: iconLibraryService,
+        batteryTypeRepository: batteryTypeRepository,
         fileSelectionService: const FileSelectorFileSelectionService(),
       );
     } on Object catch (error, stackTrace) {
@@ -112,6 +120,7 @@ final class AppDependencies {
     required this.settingsRepository,
     required this.iconRepository,
     required this.iconLibraryService,
+    required this.batteryTypeRepository,
     required this.fileSelectionService,
   });
 
@@ -122,6 +131,7 @@ final class AppDependencies {
   final DriftAppSettingsRepository settingsRepository;
   final IconRepository iconRepository;
   final IconLibraryService iconLibraryService;
+  final BatteryTypeRepository batteryTypeRepository;
   final FileSelectionService fileSelectionService;
   bool _closed = false;
 

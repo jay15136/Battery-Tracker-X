@@ -38,6 +38,9 @@ class _BatteryTrackerRootState extends State<BatteryTrackerRoot> {
         iconRepositoryProvider.overrideWithValue(
           dependencies.iconRepository,
         ),
+        batteryTypeRepositoryProvider.overrideWithValue(
+          dependencies.batteryTypeRepository,
+        ),
         iconLibraryServiceProvider.overrideWithValue(
           dependencies.iconLibraryService,
         ),
