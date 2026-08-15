@@ -54,7 +54,29 @@ before substantial implementation work.
 
 The repository contains Flutter-generated Windows, Android, iOS, and macOS project files reconciled with the original authored starter. The control documents and starter source remain intact.
 
-On a Windows development computer with Flutter installed and available on `PATH`:
+On a Windows development computer, the repository scripts automatically locate Flutter in this order:
+
+1. `BATTERY_TRACKER_FLUTTER_ROOT`
+2. `flutter` on `PATH`
+3. Common per-user locations, including `Develop\flutter`
+4. `C:\src\flutter` and `C:\flutter`
+
+Run the bootstrap script:
+
+```powershell
+.\scripts\bootstrap_windows.ps1
+```
+
+For a custom SDK location, set a temporary override for the current PowerShell session:
+
+```powershell
+$env:BATTERY_TRACKER_FLUTTER_ROOT = "D:\SDKs\flutter"
+.\scripts\bootstrap_windows.ps1
+```
+
+The override must point to the Flutter SDK root containing `bin\flutter.bat` and `bin\dart.bat`.
+
+If Flutter is already on `PATH`, the equivalent manual package command is:
 
 ```powershell
 flutter pub get
@@ -132,7 +154,13 @@ The selected logical layout is documented in `docs/ARCHITECTURE.md`. Physical pa
 
 ## Testing
 
-Run the appropriate checks after each meaningful change:
+Run the complete PowerShell check script after meaningful changes. It uses the same automatic SDK discovery:
+
+```powershell
+.\scripts\check.ps1
+```
+
+If Flutter and Dart are on `PATH`, the equivalent individual commands are:
 
 ```powershell
 dart format --output=none --set-exit-if-changed .
@@ -157,6 +185,6 @@ See `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Known starter limitation
 
-On the inspected Windows workstation, Flutter is installed at `C:\Users\jay15\Develop\flutter` but is not on `PATH`. Visual Studio with the Desktop development with C++ workload is not installed, so a Windows executable cannot be compiled until that prerequisite is added.
+On the inspected Windows workstation, Flutter is installed at `C:\Users\jay15\Develop\flutter` but is not on `PATH`. The repository scripts now locate that installation automatically. Visual Studio with the Desktop development with C++ workload is not installed, so a Windows executable cannot be compiled until that prerequisite is added.
 
 The current Codex workspace is under OneDrive and inherits a delete-deny ACL that prevents Flutter from refreshing generated `build/` and Apple `ephemeral/` directories. Verification can run from a temporary non-OneDrive snapshot without changing product code. A normal local checkout without that ACL should use the standard commands above.

@@ -1,18 +1,23 @@
 $ErrorActionPreference = "Stop"
 
+. (Join-Path $PSScriptRoot "flutter_sdk.ps1")
+$flutterSdk = Resolve-FlutterSdk
+
+Write-Host "Using Flutter SDK from $($flutterSdk.Source): $($flutterSdk.Root)"
+
 Write-Host "Restoring packages..."
-flutter pub get
+& $flutterSdk.Flutter pub get
 
 Write-Host "Checking formatting..."
-dart format --output=none --set-exit-if-changed .
+& $flutterSdk.Dart format --output=none --set-exit-if-changed .
 
 Write-Host "Running static analysis..."
-flutter analyze
+& $flutterSdk.Flutter analyze
 
 Write-Host "Running tests..."
-flutter test
+& $flutterSdk.Flutter test
 
 Write-Host "Building Windows application..."
-flutter build windows
+& $flutterSdk.Flutter build windows
 
 Write-Host "All checks completed successfully."

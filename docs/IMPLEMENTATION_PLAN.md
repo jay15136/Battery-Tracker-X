@@ -37,7 +37,7 @@ This is a living plan. Codex must update it as implementation proceeds.
 
 - Inspected 2026-08-15 on Windows 11 Home Insider Preview 25H2, build 26220.
 - Flutter 3.47.0 stable and Dart 3.13.0 are installed at `C:\Users\jay15\Develop\flutter`.
-- Flutter and Dart are not currently on `PATH`; commands used the SDK's full path.
+- Flutter and Dart are not currently on `PATH`. Repository PowerShell scripts automatically resolve the SDK through `BATTERY_TRACKER_FLUTTER_ROOT`, `PATH`, per-user folders, or common machine folders.
 - Windows desktop support is enabled and a Windows device is detected.
 - Visual Studio is not installed. `flutter doctor -v` requires Visual Studio with the Desktop development with C++ workload.
 - Android SDK is not installed. This does not block the initial Windows-first phase, but it blocks future Android builds.
@@ -545,7 +545,7 @@ Record decisions below as they are made.
 |---|---|---|---|---|
 | ENV-001 | Visual Studio C++ desktop toolchain missing | Blocking Windows build | Open | Install Visual Studio 2022/Build Tools with Desktop development with C++ and its default components. |
 | ENV-002 | OneDrive workspace denies directory deletion | Blocks repeated Flutter generation in-place | Open | Use a normal local checkout or temporary verification snapshot; do not weaken project architecture or disable SwiftPM. |
-| ENV-003 | Flutter/Dart not on `PATH` | Low | Open | Add `C:\Users\jay15\Develop\flutter\bin` to the user `PATH` or continue using the full SDK path. |
+| ENV-003 | Flutter/Dart not on `PATH` | Low | Mitigated | Shared PowerShell discovery now finds `C:\Users\jay15\Develop\flutter`; `BATTERY_TRACKER_FLUTTER_ROOT` supports custom locations. |
 | ENV-004 | Android SDK missing | Blocks future Android verification | Deferred | Install before the first Android build milestone. |
 
 ---
@@ -555,3 +555,7 @@ Record decisions below as they are made.
 1. Install Visual Studio with the Desktop development with C++ workload, then rerun `flutter doctor -v` and `flutter build windows`.
 2. Begin Phase 2 with Riverpod application setup, logging/configuration, and the executable Drift version 1 migration.
 3. Keep the application runnable and update this plan after each verified Phase 2 slice.
+
+## Tooling maintenance
+
+- 2026-08-15: `bootstrap_windows.ps1` and `check.ps1` now share automatic Flutter/Dart SDK discovery. Windows PowerShell 5.1 tests cover override, `PATH`, per-user fallback, incomplete SDK rejection, and matched Dart resolution.
