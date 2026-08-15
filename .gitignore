@@ -1,0 +1,69 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/*.log
+
+# Visual Studio / Windows generated build output
+windows/flutter/ephemeral/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+[Cc]make-build-*/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Local application data / development databases
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+local_data/
+dev_data/
+test_output/
+
+# User-managed application assets
+user_photos/
+custom_icons/
+backups/
+
+# Secrets / local environment
+.env
+.env.*
+!.env.example
+secrets/
+*.key
+*.pem
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+Thumbs.db
+
+# Generated packaging / installers
+dist/
+release/
+installer_output/
