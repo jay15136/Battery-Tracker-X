@@ -22,6 +22,24 @@ class _BatteryTrackerRootState extends State<BatteryTrackerRoot> {
     final dependencies = widget.dependencies;
     return ProviderScope(
       overrides: [
+        dashboardRepositoryProvider
+            .overrideWithValue(dependencies.dashboardRepository),
+        labelRepositoryProvider.overrideWithValue(dependencies.labelRepository),
+        bulkEditRepositoryProvider
+            .overrideWithValue(dependencies.bulkEditRepository),
+        bulkCreationRepositoryProvider
+            .overrideWithValue(dependencies.bulkCreationRepository),
+        chargeRepositoryProvider
+            .overrideWithValue(dependencies.chargeRepository),
+        assignmentRepositoryProvider
+            .overrideWithValue(dependencies.assignmentRepository),
+        deviceRepositoryProvider
+            .overrideWithValue(dependencies.deviceRepository),
+        batterySetRepositoryProvider
+            .overrideWithValue(dependencies.batterySetRepository),
+        photoServiceProvider.overrideWithValue(dependencies.photoService),
+        batteryRepositoryProvider
+            .overrideWithValue(dependencies.batteryRepository),
         appConfigurationProvider.overrideWithValue(
           dependencies.configuration,
         ),

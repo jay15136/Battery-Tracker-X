@@ -36,6 +36,12 @@ enum AppDestination {
     'Nothing is assigned.',
     'Battery and Set assignments will appear here.',
   ),
+  charging(
+      'Charge Tracking',
+      Icons.battery_charging_full,
+      'Charge events and manual estimates.',
+      'No Recorded Charges yet.',
+      'Record a charge to begin.'),
   batteryTypes(
     'Battery Types',
     Icons.category_outlined,

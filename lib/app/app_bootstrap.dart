@@ -1,4 +1,25 @@
+import '../features/dashboard/domain/dashboard.dart';
+import '../features/dashboard/data/drift_dashboard_repository.dart';
+import '../features/qr_labels/domain/labels.dart';
+import '../features/qr_labels/data/drift_label_repository.dart';
+import '../features/bulk_operations/domain/bulk_edit.dart';
+import '../features/bulk_operations/data/drift_bulk_edit_repository.dart';
+import '../features/bulk_operations/domain/bulk_creation.dart';
+import '../features/bulk_operations/data/drift_bulk_creation_repository.dart';
+import '../features/charging/domain/charge.dart';
+import '../features/charging/data/drift_charge_repository.dart';
+import '../features/assignments/domain/assignment.dart';
+import '../features/assignments/data/drift_assignment_repository.dart';
+import '../features/devices/domain/device.dart';
+import '../features/devices/data/drift_device_repository.dart';
+import '../features/battery_sets/domain/battery_set.dart';
+import '../features/battery_sets/data/drift_battery_set_repository.dart';
+import '../features/batteries/domain/battery.dart';
+import '../features/batteries/data/drift_battery_repository.dart';
 import 'dart:io';
+import '../features/photos/application/photo_service.dart';
+import '../features/photos/data/drift_photo_repository.dart';
+import '../features/photos/data/local_photo_storage.dart';
 
 import 'package:drift/drift.dart';
 
@@ -94,7 +115,59 @@ abstract final class AppBootstrap {
         iconRepository: iconRepository,
         iconLibraryService: iconLibraryService,
         batteryTypeRepository: batteryTypeRepository,
+        batteryRepository: DriftBatteryRepository(
+            database: database, iconRepository: iconRepository),
+        batterySetRepository: DriftBatterySetRepository(
+            db: database,
+            batteries: DriftBatteryRepository(
+                database: database, iconRepository: iconRepository),
+            icons: iconRepository),
+        deviceRepository: DriftDeviceRepository(
+            db: database,
+            icons: iconRepository,
+            batteries: DriftBatteryRepository(
+                database: database, iconRepository: iconRepository)),
+        assignmentRepository: DriftAssignmentRepository(db: database),
+        dashboardRepository: DriftDashboardRepository(database),
+        labelRepository: DriftLabelRepository(
+            db: database,
+            batteries: DriftBatteryRepository(
+                database: database, iconRepository: iconRepository),
+            sets: DriftBatterySetRepository(
+                db: database,
+                batteries: DriftBatteryRepository(
+                    database: database, iconRepository: iconRepository),
+                icons: iconRepository),
+            devices: DriftDeviceRepository(
+                db: database,
+                batteries: DriftBatteryRepository(
+                    database: database, iconRepository: iconRepository),
+                icons: iconRepository)),
+        bulkEditRepository: DriftBulkEditRepository(
+            db: database,
+            batteries: DriftBatteryRepository(
+                database: database, iconRepository: iconRepository),
+            sets: DriftBatterySetRepository(
+                db: database,
+                batteries: DriftBatteryRepository(
+                    database: database, iconRepository: iconRepository),
+                icons: iconRepository),
+            icons: iconRepository),
+        bulkCreationRepository: DriftBulkCreationRepository(
+            db: database,
+            batteries: DriftBatteryRepository(
+                database: database, iconRepository: iconRepository),
+            sets: DriftBatterySetRepository(
+                db: database,
+                batteries: DriftBatteryRepository(
+                    database: database, iconRepository: iconRepository),
+                icons: iconRepository)),
+        chargeRepository: DriftChargeRepository(db: database),
         fileSelectionService: const FileSelectorFileSelectionService(),
+        photoService: PhotoService(
+            repository: DriftPhotoRepository(database),
+            storage: LocalPhotoStorage(applicationSupportRoot),
+            logger: logService.logger('photos')),
       );
     } on Object catch (error, stackTrace) {
       logService.logger('bootstrap').severe(
@@ -121,7 +194,17 @@ final class AppDependencies {
     required this.iconRepository,
     required this.iconLibraryService,
     required this.batteryTypeRepository,
+    required this.batteryRepository,
     required this.fileSelectionService,
+    required this.photoService,
+    required this.dashboardRepository,
+    required this.labelRepository,
+    required this.bulkEditRepository,
+    required this.bulkCreationRepository,
+    required this.chargeRepository,
+    required this.assignmentRepository,
+    required this.deviceRepository,
+    required this.batterySetRepository,
   });
 
   final AppConfiguration configuration;
@@ -132,7 +215,17 @@ final class AppDependencies {
   final IconRepository iconRepository;
   final IconLibraryService iconLibraryService;
   final BatteryTypeRepository batteryTypeRepository;
+  final BatteryRepository batteryRepository;
   final FileSelectionService fileSelectionService;
+  final PhotoService photoService;
+  final DashboardRepository dashboardRepository;
+  final LabelRepository labelRepository;
+  final BulkEditRepository bulkEditRepository;
+  final BulkCreationRepository bulkCreationRepository;
+  final ChargeRepository chargeRepository;
+  final AssignmentRepository assignmentRepository;
+  final DeviceRepository deviceRepository;
+  final BatterySetRepository batterySetRepository;
   bool _closed = false;
 
   Future<void> close() async {

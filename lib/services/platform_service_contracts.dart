@@ -14,7 +14,11 @@ abstract interface class LabelService {
 
 /// Sends a generated PDF through the host platform's print workflow.
 abstract interface class PrintService {
-  Future<void> printPdf({required Uint8List bytes, required String jobName});
+  Future<bool> printPdf(
+      {required Uint8List bytes,
+      required String jobName,
+      double? pageWidth,
+      double? pageHeight});
 }
 
 /// Creates, validates, and restores complete application archives.

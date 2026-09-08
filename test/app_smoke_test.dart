@@ -1,3 +1,11 @@
+import 'package:battery_tracker/features/dashboard/data/drift_dashboard_repository.dart';
+import 'package:battery_tracker/features/bulk_operations/data/drift_bulk_edit_repository.dart';
+import 'package:battery_tracker/features/bulk_operations/data/drift_bulk_creation_repository.dart';
+import 'package:battery_tracker/features/charging/data/drift_charge_repository.dart';
+import 'package:battery_tracker/features/assignments/data/drift_assignment_repository.dart';
+import 'package:battery_tracker/features/batteries/data/drift_battery_repository.dart';
+import 'package:battery_tracker/features/devices/data/drift_device_repository.dart';
+import 'package:battery_tracker/features/battery_sets/data/drift_battery_set_repository.dart';
 import 'dart:io';
 
 import 'package:battery_tracker/app/app_providers.dart';
@@ -22,6 +30,142 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
 
 void main() {
+  testWidgets('bulk-created Sets refresh a previously visited Sets screen',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+    Future<void> tap(String label) async {
+      await tester.ensureVisible(find.text(label).last);
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+    }
+
+    await tester.tap(find.byKey(const ValueKey('destination-batterySets')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-batteries')));
+    await tester.pumpAndSettle();
+    await tap('Add Multiple Batteries');
+    await tap('Create Battery Set');
+    await tester.enterText(
+        find.byKey(const ValueKey('bulk-set-id')), 'BULK-SET');
+    await tester.enterText(
+        find.byKey(const ValueKey('bulk-set-name')), 'Fresh Set');
+    await tap('Add preview Set');
+    await tap('Generate preview');
+    await tap('Confirm preview and save');
+    await tap('Done');
+    await tester.tap(find.byKey(const ValueKey('destination-batterySets')));
+    await tester.pumpAndSettle();
+    expect(find.text('BULK-SET · Fresh Set'), findsOneWidget);
+  });
+  testWidgets('Batteries navigation opens transactional bulk creation',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-batteries')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add Multiple Batteries'));
+    await tester.pumpAndSettle();
+    expect(find.text('Generate preview'), findsOneWidget);
+    await tester.tap(find.text('Cancel').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Add Battery'), findsOneWidget);
+  });
+  testWidgets('Charge Tracking navigation opens history screen',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-charging')));
+    await tester.pumpAndSettle();
+    expect(find.text('Mark Selected Charged'), findsOneWidget);
+    expect(find.text('No Recorded Charges yet.'), findsOneWidget);
+  });
+  testWidgets('Battery and Device details open scoped assignment management',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    const ids = UuidV4PermanentIdGenerator();
+    await fixture.database.into(fixture.database.batteries).insert(
+        BatteriesCompanion.insert(
+            uuid: ids.next().value, userBatteryId: 'TEST-A'));
+    await fixture.database.into(fixture.database.devices).insert(
+        DevicesCompanion.insert(uuid: ids.next().value, name: 'Test Radio'));
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-batteries')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('TEST-A'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Assignments').last);
+    await tester.pumpAndSettle();
+    expect(find.text('New assignment'), findsOneWidget);
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-devices')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Test Radio'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Battery assignments'));
+    await tester.tap(find.text('Battery assignments'));
+    await tester.pumpAndSettle();
+    expect(find.text('New assignment'), findsOneWidget);
+  });
+  testWidgets('Assignments destination opens its real history screen',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-assignments')));
+    await tester.pumpAndSettle();
+    expect(find.text('New assignment'), findsOneWidget);
+    expect(find.text('No matching assignments.'), findsOneWidget);
+  });
+  testWidgets('Device navigation opens full editor and retains saved Device',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-devices')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add Device'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byKey(const ValueKey('device-Name')), 'Dispatch radio');
+    await tester.tap(find.text('Save Device'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-batterySets')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-devices')));
+    await tester.pumpAndSettle();
+    expect(find.text('Dispatch radio'), findsOneWidget);
+  });
+  testWidgets('Battery Sets navigation opens its persisted management screen',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('destination-batterySets')));
+    await tester.pumpAndSettle();
+    expect(find.text('Add Set'), findsOneWidget);
+    expect(find.text('No matching Sets. Add a Set to organize your batteries.'),
+        findsOneWidget);
+  });
   testWidgets('application shell renders all primary destinations',
       (tester) async {
     await _useDesktopSurface(tester);
@@ -33,7 +177,8 @@ void main() {
     expect(find.text('Battery Tracker'), findsOneWidget);
     expect(find.text('Dashboard'), findsWidgets);
     expect(find.text('Batteries'), findsOneWidget);
-    expect(find.text('Battery Sets'), findsOneWidget);
+    expect(
+        find.byKey(const ValueKey('destination-batterySets')), findsOneWidget);
     expect(find.text('Devices'), findsOneWidget);
     expect(find.text('Assignments'), findsOneWidget);
     expect(find.text('Battery Types'), findsOneWidget);
@@ -45,7 +190,9 @@ void main() {
   testWidgets('navigation rail changes the selected destination content',
       (tester) async {
     await _useDesktopSurface(tester);
-    await tester.pumpWidget(_testApp(_MemorySettingsRepository()));
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await tester.pumpWidget(fixture.app);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('destination-batteries')));
@@ -55,8 +202,8 @@ void main() {
       find.byKey(const ValueKey('page-title')),
     );
     expect(title.data, 'Batteries');
-    expect(find.byKey(const ValueKey('empty-state-panel')), findsOneWidget);
-    expect(find.text('No batteries have been added yet.'), findsOneWidget);
+    expect(find.text('Add your first Battery. A photograph is optional.'),
+        findsOneWidget);
   });
 
   testWidgets('Battery Types destination renders its management page',
@@ -163,9 +310,48 @@ final class _AppFixture {
           appSettingsRepositoryProvider
               .overrideWithValue(_MemorySettingsRepository()),
           applicationSupportRootProvider.overrideWithValue(root.uri),
+          assignmentRepositoryProvider
+              .overrideWithValue(DriftAssignmentRepository(db: database)),
+          chargeRepositoryProvider
+              .overrideWithValue(DriftChargeRepository(db: database)),
+          bulkCreationRepositoryProvider.overrideWithValue(
+              DriftBulkCreationRepository(
+                  db: database,
+                  batteries: DriftBatteryRepository(
+                      database: database, iconRepository: icons),
+                  sets: DriftBatterySetRepository(
+                      db: database,
+                      batteries: DriftBatteryRepository(
+                          database: database, iconRepository: icons),
+                      icons: icons))),
+          bulkEditRepositoryProvider.overrideWithValue(DriftBulkEditRepository(
+              db: database,
+              batteries: DriftBatteryRepository(
+                  database: database, iconRepository: icons),
+              sets: DriftBatterySetRepository(
+                  db: database,
+                  batteries: DriftBatteryRepository(
+                      database: database, iconRepository: icons),
+                  icons: icons),
+              icons: icons)),
           iconRepositoryProvider.overrideWithValue(icons),
           batteryTypeRepositoryProvider.overrideWithValue(types),
+          batteryRepositoryProvider.overrideWithValue(DriftBatteryRepository(
+              database: database, iconRepository: icons)),
+          deviceRepositoryProvider.overrideWithValue(DriftDeviceRepository(
+              db: database,
+              icons: icons,
+              batteries: DriftBatteryRepository(
+                  database: database, iconRepository: icons))),
+          batterySetRepositoryProvider.overrideWithValue(
+              DriftBatterySetRepository(
+                  db: database,
+                  batteries: DriftBatteryRepository(
+                      database: database, iconRepository: icons),
+                  icons: icons)),
           appLogServiceProvider.overrideWithValue(_LogService()),
+          dashboardRepositoryProvider
+              .overrideWithValue(DriftDashboardRepository(database)),
         ],
         child: const BatteryTrackerApp(),
       ),
@@ -204,9 +390,13 @@ Future<void> _useDesktopSurface(WidgetTester tester) async {
 }
 
 Widget _testApp(_MemorySettingsRepository repository) {
+  final db = AppDatabase.forTesting(NativeDatabase.memory());
+  addTearDown(db.close);
   return ProviderScope(
     overrides: [
       appSettingsRepositoryProvider.overrideWithValue(repository),
+      dashboardRepositoryProvider
+          .overrideWithValue(DriftDashboardRepository(db)),
     ],
     child: const BatteryTrackerApp(),
   );

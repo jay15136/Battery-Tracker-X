@@ -4,7 +4,7 @@ Battery Tracker is an offline-first rechargeable-battery inventory and device-ma
 
 The initial target is **Windows 11**. The architecture is intended to remain portable to Android, iPhone/iPad, and macOS.
 
-> Development status: Phase 4, Battery Types, is complete. Phase 5 Battery Inventory is next. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
+> Development status: Phase 14 Dashboard is complete. Phase 15 History is next. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
 
 ## Core Version 1 scope
 
@@ -29,6 +29,42 @@ The initial target is **Windows 11**. The architecture is intended to remain por
 - Dashboard and activity history
 - CSV import/export
 - Complete backup and restore
+
+## Dashboard
+
+The opening Dashboard shows nine live inventory counts, the latest 20 activity events, and Batteries needing attention. Configurable reminders use days since the last recorded charge, Recorded Charges totals, and differences within current Sets. Search or hide retired Batteries in the attention list, open a record directly, and use shortcuts to inventory, charging, or labels. Changes refresh automatically from SQLite; no statistics are hard-coded.
+
+See `lib/features/dashboard/README.md` for count definitions, reminder defaults, and persistence behavior.
+
+## QR Labels
+
+Create UUID-based labels for Batteries, Sets, and Devices from the QR Labels screen or inventory details. The designer includes presets, custom dimensions, selectable fields, icon/color and optional photo rendering, reusable templates, live/page previews, PDF export, and native printing. Sheet layouts support partially used sheets through a starting position. Enter/paste QR values or read a QR image to open the current record, including after renaming. Bulk creation can immediately label all or selected new Batteries, or save the selection for later.
+
+See `lib/features/qr_labels/README.md` for label setup, dependencies, validation, and hardware checks.
+
+## Battery Sets
+
+Battery Sets now support editable sequential IDs, permanent UUIDs, icon/color selection, optional photographs, current member details, and membership/assignment/activity history. Add or move batteries with explicit compatibility warnings, record a charge for every current member atomically, and assign/remove the entire Set from a Device.
+
+Set assignment includes a Create Device shortcut backed by the full Device repository. Remove an assigned Set from its Device before changing membership or deactivating/deleting it. Deleting a Set preserves its Batteries and historical records. QR labels are available for the Set itself or its current member Batteries.
+
+See `lib/features/battery_sets/README.md` for persistence rules and workflows. Phase 7 uses the existing schema v1 and adds no production dependencies.
+
+## Devices
+
+Devices support full metadata, custom categories, explicit category icon suggestions, icon/color selection, optional photographs, and optional Battery Type/quantity/voltage requirements. Search and category/status filters locate equipment; details show current Batteries/Sets and retained assignment history.
+
+Whole-Set assignment and removal are available from Device details, with confirmed compatibility overrides. Deactivation/deletion require removing installed inventory first and preserve history. Existing Devices created during Phase 7 retain their UUIDs and assignments. Individual and multi-Battery assignment actions are available through Battery assignments.
+
+See `lib/features/devices/README.md` for lifecycle and persistence rules. Phase 8 uses schema v1 without additional production dependencies.
+
+## Assignments
+
+The Assignments screen handles individual Batteries, multiple Batteries, and whole Sets. Choose installation/removal dates and notes, review compatibility warnings, and remove selected assignments atomically. Available/all filtering helps find inventory; history retains installation details, separate removal notes, and duration.
+
+Battery and Device details open scoped assignment managers. Whole-Set shortcuts use the same transaction implementation. A Battery installed through a Set is removed with its whole Set. Backdated records are allowed without overlapping prior assignment history; future dates and removal before installation are rejected.
+
+See `lib/features/assignments/README.md` for date, status, and history rules. Phase 9 uses schema v1 and adds no production dependencies.
 
 ## Technology direction
 
@@ -140,6 +176,57 @@ Settings → Icon Library provides 54 packaged SVG icons with Battery, Battery S
 
 Custom PNG and SVG imports receive permanent UUIDs and are copied into application-managed storage. SVG scripts and external content are rejected. Editing metadata or replacing a file never changes the custom icon UUID. In-use deletion reports the reference count and requires an explicit replacement icon or owner defaults; a missing custom file renders the owner default instead of a broken image.
 
+## Current verification
+
+Formatting and analysis are clean; all 176 tests pass. The Windows Release build,
+a five-second process launch check, and the startup log confirm successful startup.
+The runnable folder is `build/phase6-release` (keep the executable with its DLLs
+and data folder). In-place Flutter generation remains affected by the documented
+OneDrive delete-deny ACL; use a normal local checkout for repeated builds/tests.
+Physical webcam capture and OS-level drag gestures remain manual verification items.
+## Battery inventory
+
+Open **Batteries → Add Battery** to enter an editable Battery ID and optional name,
+specifications, purchase details, Batch ID, status, condition, and notes. Every
+Battery starts with an icon; photographs are not required. Choose an icon/color
+from the existing library, including custom icons imported through Settings.
+
+Select a Battery Type and use **Apply type specifications and icon defaults** to
+copy its suggestions, then override any value. Use **Suggest next Battery ID** to
+preview the next unused ID for a prefix. Save rejects duplicates without changing
+your entered ID. The permanent UUID remains unchanged when the displayed ID changes.
+
+Switch between table and card views, combine the eight inventory filters, search,
+and change sort order. Open a Battery for its specifications, purchase information,
+current Set/Device summaries, Recorded Charges, and status/activity history. Edit
+preserves its identity and related records. Choosing Retired requires confirmation.
+All saves use real SQLite transactions, including optional Batch creation and history.
+The existing schema remains version 1; no migration is needed for this phase.
+
+## Optional photographs
+
+Open **Batteries → select a Battery → Photographs**. Add a PNG, JPEG, or WebP from
+your computer, drop files onto the gallery, or choose Capture Photograph for an
+explicit webcam preview and shutter. Files are limited to 25 MB and 40 megapixels.
+
+The default choice after import is **Keep Icon as Primary**. Use Photo as Primary
+is explicit. The gallery supports multiple photographs, primary selection,
+replacement, removal with confirmation, and switching back to the icon. Missing
+or corrupt photographs fall back to the inventory icon; the gallery offers
+replacement/removal. Removing a primary photo returns the record to its icon.
+
+Photographs are copied below application-support `photos/` using UUID filenames;
+source files are not changed. SQLite stores relative references, dimensions, and
+SHA-256 checksums. Photo metadata and activity changes are transactional and reuse
+schema version 1. Set/Device storage support is tested; their gallery entry points
+will be connected with their planned detail screens in Phases 7 and 8.
+
+Camera access is optional and never starts during normal record creation. Camera
+and drop callbacks are tested; physical webcam capture and OS drag gestures remain
+manual verification items. The current macOS path supports file import/drop;
+webcam support there needs a future platform adapter. See
+[photo architecture and dependency decisions](lib/features/photos/README.md).
+
 ## Battery Types
 
 Battery Types are reusable, user-managed specifications. Each record has a required, case-insensitively unique active type name; optional description, chemistry, physical size, and notes; optional positive default voltage; an optional positive default capacity paired with a required capacity unit; and a suggested Battery-scope icon and color. Chemistry suggestions (NiMH, NiCd, Li-ion, LiPo, LiFePO4, Lead Acid, Proprietary, and Other) and capacity-unit suggestions (mAh, Ah, and Wh) are editable text suggestions, not closed lists.
@@ -208,7 +295,7 @@ flutter build windows
 
 The complete acceptance scenarios are in `Battery_Tracker_Master_Codex_Prompt.md`.
 
-The current 151-test suite covers the foundation and icon system plus Battery Type validation, Drift-backed CRUD/restart persistence, UUID stability, case-insensitive active-name and reactivation conflicts, reference-preserving deactivation with exact usage metadata, activity events and transaction rollback, controller refresh behavior, form errors/editable suggestions, icon fallback, and responsive page workflows.
+The current 343-test suite covers the foundation, icon library, Battery Types, individual inventory, optional photographs, and Battery Sets. Set coverage includes the four-member acceptance workflow, SQLite restart persistence, UUID stability, compatibility acknowledgment, history, and injected rollback failures for membership moves, charging, assignment, and removal. Device tests additionally cover full-field persistence, requirement validation/overrides, lifecycle rollback, earlier-phase records, explicit photo preference, and missing-photo fallback. Assignment tests cover multi-record rollback, date/overlap validation, membership-linked removal, separate installation/removal notes, warning revalidation, duration, and restart persistence. Dashboard tests cover live counts, attention rules, persisted thresholds, retained recent activity, record navigation, and responsive light/dark layouts. QR tests cover stable UUID lookup, template/job restart persistence, custom icon/photo rendering, text overflow, sheet positions, PDF export, print cancellation, and the bulk-creation shortcut. Physical printer alignment and live webcam capture still need a hardware check. Widget tests cover real repository-backed screens in light/dark themes, narrow layouts, and application navigation.
 
 ## Version
 
@@ -224,6 +311,22 @@ See `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Known environment limitations
 
-On the inspected Windows workstation, Flutter is installed at `C:\Users\jay15\Develop\flutter` but is not on `PATH`. The repository scripts locate that installation automatically. Flutter detects Visual Studio Professional 2026 with its Windows C++ toolchain, and the Phase 3 Windows Release build succeeds and passes repeated launch checks.
+On the inspected Windows workstation, Flutter is installed at `C:\Users\jay15\Develop\flutter` but is not on `PATH`. The repository scripts locate that installation automatically. Flutter detects Visual Studio Professional 2026 with its Windows C++ toolchain, and the Phase 14 Windows Release build succeeds and passes its startup check.
 
-The current Codex workspace is under OneDrive and inherits a delete-deny ACL that prevents Flutter from refreshing generated `build/` and Apple `ephemeral/` directories. Phase 4 final verification ran in the linked normal-ACL TEMP worktree outside the OneDrive checkout. A normal local checkout without that ACL should use the standard commands above. Visual Studio warns when a build output is under `%TEMP%`; the Phase 4 Release build and both five-second launch checks nevertheless completed successfully.
+The current Codex workspace is under OneDrive and inherits a delete-deny ACL that prevents Flutter from refreshing generated `build/` and Apple `ephemeral/` directories. Phase 14 final verification ran in a normal-ACL temporary snapshot outside the OneDrive checkout. A normal local checkout without that ACL should use the standard commands above. Visual Studio warns when a build output is under `%TEMP%`; the Phase 14 Release build and five-second startup check nevertheless completed successfully. The verified runnable build is available locally in ignored `build/phase14-release`.
+
+## Charge Tracking
+
+Record individual, selected-Battery, or entire-Set charges with a charge date, optional start/end percentages, charger, and notes. Charge Tracking shows each Battery's Recorded Charges, Last Charged, current manual estimate, and history. Battery details and Set history provide scoped access.
+
+Ending percentage defaults to 100. Manual current estimates remain unchanged unless explicitly updated; estimates can also be edited or cleared without recording a charge. Selected and Set actions are all-or-nothing transactions. See `lib/features/charging/README.md` for validation, backdated status behavior, and persistence rules. Phase 10 adds no dependencies or migration.
+## Bulk Battery Creation
+
+Open **Batteries → Add Multiple Batteries** to configure shared fields, icon/color, optional Batch ID and tags, and sequential Battery IDs. Generate an editable preview, resolve duplicates by editing/skipping or using next-available IDs, and assign rows to existing or new Sets. Each Battery receives its own UUID and history. A single transaction saves the entire operation, including memberships.
+
+Purchase price supports per-Battery or total purchase modes. Total mode preserves the total and calculates approximate per-Battery cost in the preview. Confirming saves the reviewed values without renumbering. See `lib/features/bulk_operations/README.md` for limits, price allocation behavior, transaction rules, and acceptance coverage.
+## Bulk Edit and Retirement
+
+Select Batteries using table/card checkboxes or **Select filtered**, then choose **Bulk Edit**, **Retire Selected Batteries**, or **Mark Selected Charged**. Bulk Edit supports Type, Status, Condition, icons/colors, Set membership, tags, appended shared notes, and purchase information. Each operation shows the selected count and old/new values before confirmation, rechecks for changes since preview, and saves atomically.
+
+Retirement stores a date and reason, preserves history and Set membership, and requires active Device assignments to be removed first. Retirement details appear in Battery details. See `lib/features/bulk_operations/README.md` for validation, restoration behavior, selection rules, and transaction coverage.

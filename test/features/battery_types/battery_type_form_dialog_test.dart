@@ -245,8 +245,9 @@ void main() {
     expect(find.bySemanticsLabel('Generic Battery'), findsOneWidget);
     expect(find.textContaining('SqliteException'), findsNothing);
     expect(logs.severeRecords, hasLength(1));
-    expect(logs.scopes, ['battery_types.ui']);
-    expect(logs.severeRecords.single.message, 'Battery Type operation failed.');
+    expect(logs.scopes, ['icons.ui']);
+    expect(
+        logs.severeRecords.single.message, 'Inventory icon resolution failed.');
     expect(logs.severeRecords.single.error, isNotNull);
     await tester.pump(const Duration(milliseconds: 50));
     expect(logs.severeRecords, hasLength(1));

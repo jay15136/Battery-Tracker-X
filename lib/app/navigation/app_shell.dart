@@ -1,3 +1,10 @@
+import '../../core/identity/permanent_id.dart';
+import '../../features/qr_labels/presentation/qr_labels_page.dart';
+import '../../features/charging/presentation/charge_tracking_page.dart';
+import '../../features/assignments/presentation/assignments_page.dart';
+import '../../features/devices/presentation/devices_page.dart';
+import '../../features/battery_sets/presentation/battery_sets_page.dart';
+import '../../features/batteries/presentation/batteries_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -69,8 +76,12 @@ class AppShell extends ConsumerWidget {
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 180),
                   child: _DestinationContent(
-                    key: ValueKey(navigation.destination),
+                    key: ValueKey(
+                        (navigation.destination, navigation.routeIntent)),
                     destination: navigation.destination,
+                    entityId: navigation.routeIntent is EntityRouteIntent
+                        ? (navigation.routeIntent as EntityRouteIntent).entityId
+                        : null,
                   ),
                 ),
               ),
@@ -133,13 +144,21 @@ class _BrandHeader extends StatelessWidget {
 }
 
 class _DestinationContent extends StatelessWidget {
-  const _DestinationContent({required this.destination, super.key});
+  const _DestinationContent(
+      {required this.destination, this.entityId, super.key});
+  final PermanentId? entityId;
 
   final AppDestination destination;
 
   @override
   Widget build(BuildContext context) {
     return switch (destination) {
+      AppDestination.batteries => BatteriesPage(initialId: entityId),
+      AppDestination.qrLabels => const QrLabelsPage(),
+      AppDestination.charging => const ChargeTrackingPage(),
+      AppDestination.assignments => const AssignmentsPage(),
+      AppDestination.devices => DevicesPage(initialId: entityId),
+      AppDestination.batterySets => BatterySetsPage(initialId: entityId),
       AppDestination.dashboard => const DashboardPage(),
       AppDestination.batteryTypes => const BatteryTypesPage(),
       AppDestination.settings => const SettingsPage(),
