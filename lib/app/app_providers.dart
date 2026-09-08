@@ -1,4 +1,7 @@
 import '../features/dashboard/domain/dashboard.dart';
+import '../features/history/domain/history.dart';
+import '../features/backup/domain/backup.dart';
+import '../features/import_export/domain/import_export.dart';
 import '../features/qr_labels/domain/labels.dart';
 import '../features/qr_labels/application/canvas_label_renderer.dart';
 import '../services/platform_service_contracts.dart';
@@ -112,3 +115,12 @@ final labelRendererProvider = Provider<LabelRenderer>((ref) =>
 
 final dashboardRepositoryProvider = Provider<DashboardRepository>(
     (ref) => throw StateError('Dashboard was not configured.'));
+
+final historyRepositoryProvider = Provider<HistoryRepository>(
+    (ref) => throw StateError('History was not configured.'));
+
+final backupRepositoryProvider = Provider<BackupRepository>(
+    (ref) => throw StateError('Backup was not configured.'));
+
+final importExportRepositoryProvider = Provider<ImportExportRepository>(
+    (ref) => throw StateError('Import/Export was not configured.'));

@@ -9,12 +9,15 @@ import 'services/path_provider_app_data_directory_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  Future<AppDependencies> bootstrap() => AppBootstrap.start(
+        configuration: AppConfiguration.production,
+        appDataDirectoryService: const PathProviderAppDataDirectoryService(),
+      );
+
   try {
-    final dependencies = await AppBootstrap.start(
-      configuration: AppConfiguration.production,
-      appDataDirectoryService: const PathProviderAppDataDirectoryService(),
-    );
-    runApp(BatteryTrackerRoot(dependencies: dependencies));
+    final dependencies = await bootstrap();
+    runApp(
+        BatteryTrackerRoot(dependencies: dependencies, bootstrap: bootstrap));
   } on Object catch (error, stackTrace) {
     FlutterError.reportError(
       FlutterErrorDetails(

@@ -1,5 +1,11 @@
 import '../features/dashboard/domain/dashboard.dart';
 import '../features/dashboard/data/drift_dashboard_repository.dart';
+import '../features/history/domain/history.dart';
+import '../features/history/data/drift_history_repository.dart';
+import '../features/backup/domain/backup.dart';
+import '../features/backup/data/local_backup_repository.dart';
+import '../features/import_export/domain/import_export.dart';
+import '../features/import_export/data/drift_import_export_repository.dart';
 import '../features/qr_labels/domain/labels.dart';
 import '../features/qr_labels/data/drift_label_repository.dart';
 import '../features/bulk_operations/domain/bulk_edit.dart';
@@ -129,6 +135,23 @@ abstract final class AppBootstrap {
                 database: database, iconRepository: iconRepository)),
         assignmentRepository: DriftAssignmentRepository(db: database),
         dashboardRepository: DriftDashboardRepository(database),
+        historyRepository: DriftHistoryRepository(database),
+        backupRepository: LocalBackupRepository(
+            db: database,
+            applicationSupportRoot: applicationSupportRoot,
+            configuration: configuration,
+            idGenerator: idGenerator),
+        importExportRepository: DriftImportExportRepository(
+            db: database,
+            batteries: DriftBatteryRepository(
+                database: database, iconRepository: iconRepository),
+            batterySets: DriftBatterySetRepository(
+                db: database,
+                batteries: DriftBatteryRepository(
+                    database: database, iconRepository: iconRepository),
+                icons: iconRepository),
+            batteryTypes: batteryTypeRepository,
+            idGenerator: idGenerator),
         labelRepository: DriftLabelRepository(
             db: database,
             batteries: DriftBatteryRepository(
@@ -198,6 +221,9 @@ final class AppDependencies {
     required this.fileSelectionService,
     required this.photoService,
     required this.dashboardRepository,
+    required this.historyRepository,
+    required this.backupRepository,
+    required this.importExportRepository,
     required this.labelRepository,
     required this.bulkEditRepository,
     required this.bulkCreationRepository,
@@ -219,6 +245,9 @@ final class AppDependencies {
   final FileSelectionService fileSelectionService;
   final PhotoService photoService;
   final DashboardRepository dashboardRepository;
+  final HistoryRepository historyRepository;
+  final BackupRepository backupRepository;
+  final ImportExportRepository importExportRepository;
   final LabelRepository labelRepository;
   final BulkEditRepository bulkEditRepository;
   final BulkCreationRepository bulkCreationRepository;

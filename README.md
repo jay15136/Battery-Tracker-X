@@ -4,7 +4,7 @@ Battery Tracker is an offline-first rechargeable-battery inventory and device-ma
 
 The initial target is **Windows 11**. The architecture is intended to remain portable to Android, iPhone/iPad, and macOS.
 
-> Development status: Phase 14 Dashboard is complete. Phase 15 History is next. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
+> Development status: All 17 development phases are complete. Version 1 scope is implemented, tested, and verified with a Windows Release build. Product requirements are defined in `Battery_Tracker_Master_Codex_Prompt.md`.
 
 ## Core Version 1 scope
 
@@ -65,6 +65,24 @@ The Assignments screen handles individual Batteries, multiple Batteries, and who
 Battery and Device details open scoped assignment managers. Whole-Set shortcuts use the same transaction implementation. A Battery installed through a Set is removed with its whole Set. Backdated records are allowed without overlapping prior assignment history; future dates and removal before installation are rejected.
 
 See `lib/features/assignments/README.md` for date, status, and history rules. Phase 9 uses schema v1 and adds no production dependencies.
+
+## History
+
+The History screen is a unified, filterable read of the activity every other feature already records — assignments, Set membership, charging, status changes, additions, retirement, QR label output, icon/photo changes, and bulk/CSV operations. Filter by Date, Activity Type, or one Battery/Battery Set/Device at a time; results page 25 at a time and update live while the page is open. Deleted or deactivated records keep their historical text but are no longer clickable.
+
+See `lib/features/history/README.md` for the category catalog and filter behavior. Phase 15 reads the existing schema v1 `activity_log` table and adds no dependency or migration.
+
+## Backup and restore
+
+Settings → **Data Management** → **Create Backup** writes one ZIP archive containing a consistent database snapshot plus every photograph and custom icon file; QR templates, settings, and icon selections already live in the database and travel with it. **Restore Backup** validates the chosen archive (checksums, safe paths, an openable database), asks for confirmation, then replaces the current database/photos/custom icons, keeping the prior state as a recovery copy until the restore is verified. The application reloads its data in place afterward — no restart required.
+
+See `lib/features/backup/README.md` for the archive layout, validation rules, and restore/rollback behavior. Phase 16 adds the `archive` package behind `BackupRepository`.
+
+## CSV import and export
+
+Settings → **Data Management** also exports the current Battery or Battery Set inventory to CSV, and offers a blank import template. CSV import maps header columns automatically, previews every row — flagging validation errors, an unrecognized Battery Type as a warning, and duplicate Battery IDs — and writes nothing until the preview is explicitly confirmed. Only valid, non-duplicate rows are created, inside one transaction, with one summary activity entry.
+
+See `lib/features/import_export/README.md` for field lists, validation rules, and duplicate-detection behavior. Phase 16 adds the `csv` package behind `ImportExportRepository`, built entirely on the existing Battery/Battery Set/Battery Type repositories.
 
 ## Technology direction
 
@@ -178,12 +196,12 @@ Custom PNG and SVG imports receive permanent UUIDs and are copied into applicati
 
 ## Current verification
 
-Formatting and analysis are clean; all 176 tests pass. The Windows Release build,
-a five-second process launch check, and the startup log confirm successful startup.
-The runnable folder is `build/phase6-release` (keep the executable with its DLLs
-and data folder). In-place Flutter generation remains affected by the documented
-OneDrive delete-deny ACL; use a normal local checkout for repeated builds/tests.
-Physical webcam capture and OS-level drag gestures remain manual verification items.
+Formatting and analysis are clean through Phase 16. See `docs/IMPLEMENTATION_PLAN.md`
+for the exact test count, build timing, and runnable-copy hash recorded at each
+phase's completion. In-place Flutter generation remains affected by the documented
+OneDrive delete-deny ACL; use a normal local checkout or temporary snapshot for
+repeated builds/tests. Physical webcam capture and OS-level drag gestures remain
+manual verification items.
 ## Battery inventory
 
 Open **Batteries → Add Battery** to enter an editable Battery ID and optional name,
@@ -295,7 +313,7 @@ flutter build windows
 
 The complete acceptance scenarios are in `Battery_Tracker_Master_Codex_Prompt.md`.
 
-The current 343-test suite covers the foundation, icon library, Battery Types, individual inventory, optional photographs, and Battery Sets. Set coverage includes the four-member acceptance workflow, SQLite restart persistence, UUID stability, compatibility acknowledgment, history, and injected rollback failures for membership moves, charging, assignment, and removal. Device tests additionally cover full-field persistence, requirement validation/overrides, lifecycle rollback, earlier-phase records, explicit photo preference, and missing-photo fallback. Assignment tests cover multi-record rollback, date/overlap validation, membership-linked removal, separate installation/removal notes, warning revalidation, duration, and restart persistence. Dashboard tests cover live counts, attention rules, persisted thresholds, retained recent activity, record navigation, and responsive light/dark layouts. QR tests cover stable UUID lookup, template/job restart persistence, custom icon/photo rendering, text overflow, sheet positions, PDF export, print cancellation, and the bulk-creation shortcut. Physical printer alignment and live webcam capture still need a hardware check. Widget tests cover real repository-backed screens in light/dark themes, narrow layouts, and application navigation.
+The test suite (see `docs/IMPLEMENTATION_PLAN.md` for the exact count as of the latest completed phase) covers the foundation, icon library, Battery Types, individual inventory, optional photographs, Battery Sets, Devices, Assignments, Charge Tracking, Bulk Creation/Edit, QR Labels, the Dashboard, History, Backup/Restore, and CSV Import/Export. Set coverage includes the four-member acceptance workflow, SQLite restart persistence, UUID stability, compatibility acknowledgment, history, and injected rollback failures for membership moves, charging, assignment, and removal. Device tests additionally cover full-field persistence, requirement validation/overrides, lifecycle rollback, earlier-phase records, explicit photo preference, and missing-photo fallback. Assignment tests cover multi-record rollback, date/overlap validation, membership-linked removal, separate installation/removal notes, warning revalidation, duration, and restart persistence. Dashboard tests cover live counts, attention rules, persisted thresholds, retained recent activity, record navigation, and responsive light/dark layouts. History tests cover every catalogued activity category plus an "Other" fallback, date bounds, entity filtering, pagination, and live updates. Backup tests cover a full create/validate/restore round trip against real files and SQLite, checksum tampering, path traversal, and automatic rollback on a failed restore. CSV tests cover export round trips, every import validation rule, and within-file/existing-record duplicate detection. QR tests cover stable UUID lookup, template/job restart persistence, custom icon/photo rendering, text overflow, sheet positions, PDF export, print cancellation, and the bulk-creation shortcut. Physical printer alignment and live webcam capture still need a hardware check. Widget tests cover real repository-backed screens in light/dark themes, narrow layouts, and application navigation. `DataManagementPage` (backup/restore/CSV UI) is covered indirectly through its underlying repositories and shared dialog/file-selection patterns rather than a dedicated widget test — see the Phase 16 notes in `docs/IMPLEMENTATION_PLAN.md` for why a dedicated widget test for that page was dropped.
 
 ## Version
 

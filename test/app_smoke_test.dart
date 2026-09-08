@@ -1,4 +1,5 @@
 import 'package:battery_tracker/features/dashboard/data/drift_dashboard_repository.dart';
+import 'package:battery_tracker/features/history/data/drift_history_repository.dart';
 import 'package:battery_tracker/features/bulk_operations/data/drift_bulk_edit_repository.dart';
 import 'package:battery_tracker/features/bulk_operations/data/drift_bulk_creation_repository.dart';
 import 'package:battery_tracker/features/charging/data/drift_charge_repository.dart';
@@ -206,6 +207,21 @@ void main() {
         findsOneWidget);
   });
 
+  testWidgets('History destination renders its unified activity page',
+      (tester) async {
+    await _useDesktopSurface(tester);
+    final fixture = await _AppFixture.create();
+    addTearDown(fixture.close);
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('destination-history')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('History'), findsWidgets);
+    expect(find.textContaining('No activity recorded yet.'), findsOneWidget);
+  });
+
   testWidgets('Battery Types destination renders its management page',
       (tester) async {
     await _useDesktopSurface(tester);
@@ -352,6 +368,8 @@ final class _AppFixture {
           appLogServiceProvider.overrideWithValue(_LogService()),
           dashboardRepositoryProvider
               .overrideWithValue(DriftDashboardRepository(database)),
+          historyRepositoryProvider
+              .overrideWithValue(DriftHistoryRepository(database)),
         ],
         child: const BatteryTrackerApp(),
       ),
@@ -397,6 +415,7 @@ Widget _testApp(_MemorySettingsRepository repository) {
       appSettingsRepositoryProvider.overrideWithValue(repository),
       dashboardRepositoryProvider
           .overrideWithValue(DriftDashboardRepository(db)),
+      historyRepositoryProvider.overrideWithValue(DriftHistoryRepository(db)),
     ],
     child: const BatteryTrackerApp(),
   );

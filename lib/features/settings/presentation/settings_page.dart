@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/app_page_scaffold.dart';
+import '../../backup/presentation/data_management_page.dart';
 import '../../icons/presentation/icon_library_page.dart';
 import '../application/theme_preference_controller.dart';
 import '../domain/theme_preference.dart';
@@ -117,14 +118,24 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Card(
+          Card(
             child: ListTile(
-              leading: Icon(Icons.storage_outlined),
-              title: Text('Local application data'),
-              subtitle: Text(
-                'Database, logs, photographs, and custom icons use '
-                'application-managed storage.',
+              key: const ValueKey('settings-data-management'),
+              leading: const Icon(Icons.storage_outlined),
+              title: const Text('Data Management'),
+              subtitle: const Text(
+                'Back up, restore, and export or import CSV data. Database, '
+                'logs, photographs, and custom icons use application-managed '
+                'storage.',
               ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const DataManagementPage(),
+                  ),
+                );
+              },
             ),
           ),
         ],

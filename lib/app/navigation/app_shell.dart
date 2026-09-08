@@ -9,9 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_constants.dart';
-import '../../core/widgets/app_empty_state.dart';
-import '../../core/widgets/app_page_scaffold.dart';
 import '../../features/dashboard/presentation/dashboard_page.dart';
+import '../../features/history/presentation/history_page.dart';
 import '../../features/battery_types/presentation/battery_types_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import 'app_destination.dart';
@@ -162,16 +161,7 @@ class _DestinationContent extends StatelessWidget {
       AppDestination.dashboard => const DashboardPage(),
       AppDestination.batteryTypes => const BatteryTypesPage(),
       AppDestination.settings => const SettingsPage(),
-      _ => AppPageScaffold(
-          title: destination.label,
-          description: destination.description,
-          icon: destination.icon,
-          child: AppEmptyState(
-            icon: destination.icon,
-            title: destination.emptyTitle,
-            message: destination.emptyMessage,
-          ),
-        ),
+      AppDestination.history => const HistoryPage(),
     };
   }
 }

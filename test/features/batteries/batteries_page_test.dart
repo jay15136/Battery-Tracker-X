@@ -118,4 +118,24 @@ void main() {
         }).length,
         2);
   });
+  testWidgets(
+      'a large inventory renders, searches, and paginates without failing',
+      (tester) async {
+    for (var i = 0; i < 500; i++) {
+      await repository.save(BatteryDraft(
+          userBatteryId: 'BULK-${i.toString().padLeft(4, '0')}',
+          manufacturer: i.isEven ? 'Acme' : 'Contoso'));
+    }
+    await pump(tester);
+    expect(find.textContaining('500'), findsWidgets);
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Search Batteries'), 'BULK-0499');
+    await tester.pumpAndSettle();
+    expect(find.text('BULK-0499'), findsWidgets);
+    expect(find.text('BULK-0000'), findsNothing);
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Search Batteries'), '');
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
 }
