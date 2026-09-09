@@ -99,17 +99,13 @@ class _BrandHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final mark = Container(
-      width: 42,
-      height: 42,
-      decoration: BoxDecoration(
-        color: colorScheme.primary,
-        borderRadius: BorderRadius.circular(13),
-      ),
-      child: Icon(
-        Icons.battery_charging_full,
-        color: colorScheme.onPrimary,
+    final mark = ClipRRect(
+      borderRadius: BorderRadius.circular(13),
+      child: Image.asset(
+        'assets/branding/app_logo.png',
+        width: 42,
+        height: 42,
+        fit: BoxFit.contain,
       ),
     );
 
