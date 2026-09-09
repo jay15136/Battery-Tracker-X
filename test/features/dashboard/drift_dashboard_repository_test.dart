@@ -150,12 +150,18 @@ void main() {
     final set = await db.into(db.batterySets).insert(
         BatterySetsCompanion.insert(uuid: uuid(), userSetId: 'S', name: 'Set'));
     for (final id in [a, b]) {
-      await db.into(db.batterySetMemberships).insert(
-          BatterySetMembershipsCompanion.insert(
+      await db
+          .into(db.batterySetMemberships)
+          .insert(BatterySetMembershipsCompanion.insert(
               operationUuid: uuid(),
               uuid: uuid(),
               batteryId: id,
-              batterySetId: set));
+              batterySetId: set,
+              // Anchored to the fixture's fixed `now` rather than the
+              // column's real-wall-clock client default, so this stays
+              // deterministic before the removedAt write below regardless
+              // of what day it actually is when the suite runs.
+              addedAt: Value(now)));
     }
     for (var i = 0; i < 3; i++) {
       await charge(a, now);

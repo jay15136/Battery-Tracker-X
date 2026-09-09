@@ -261,7 +261,9 @@ User-facing IDs such as `AA-001` remain editable and must not be used as immutab
 
 ## Local data
 
-Battery Tracker resolves an operating-system application-support directory at runtime and creates a `BatteryTracker` directory beneath it. On Windows this is under the current user's roaming application-data directory, normally `%APPDATA%\<publisher>\<product>\BatteryTracker`.
+On Windows, Battery Tracker stores everything in a `My Battery Data` folder next to `battery_tracker.exe` — a fully portable deployment. Copy the built application folder anywhere, including a USB drive, and its data travels with it; running it from a different PC, or a different drive letter on the same PC, finds the same data automatically. See **Portable USB deployment** below.
+
+Other platforms resolve an operating-system application-support directory at runtime and create a `BatteryTracker` directory beneath it (for example, per-user `Application Support`/profile locations on macOS/iOS/Android), since a writable folder next to the binary is not available inside a mobile app bundle.
 
 The implemented Phase 3 layout is:
 
@@ -282,6 +284,23 @@ Later feature phases add:
 Do not hard-code machine-specific absolute paths into persistent domain records.
 
 The selected logical layout is documented in `docs/ARCHITECTURE.md`. SQLite stores only safe relative asset references. The schema is created through migration version 1, enables foreign keys on every connection, and persists timestamps as UTC ISO-8601 text.
+
+## Portable USB deployment
+
+Battery Tracker on Windows is designed to run as a self-contained, portable folder — no installer, no per-user AppData footprint. To deploy it:
+
+1. Build the Release folder (`flutter build windows --release`), which produces `build\windows\x64\runner\Release\` containing `battery_tracker.exe`, its DLLs, and a `data\` folder.
+2. Copy that entire folder to wherever you want it to live — a USB drive, a synced folder, anywhere — and rename it if you like (for example, `Battery Tracker X`).
+3. Run `battery_tracker.exe` directly from there. On first launch it creates `My Battery Data\` next to itself and stores the database, photographs, custom icons, and logs there.
+
+Because the data folder is located relative to the running executable (via `Platform.resolvedExecutable`, not a stored path), this works correctly no matter which drive letter Windows assigns the media on a given PC. Plug the same drive into a different PC and it finds the same data — there is no per-machine database to keep in sync.
+
+Two things to know:
+
+- **Existing installs are not migrated automatically.** If you were previously running Battery Tracker from a fixed location with per-user AppData storage, switching to a portable copy starts with an empty database. Use **Settings → Data Management → Create Backup** on the old install and **Restore Backup** on the new portable copy to bring your data across, or copy `database/`, `photos/`, and `custom_icons/` directly.
+- **The Microsoft Visual C++ Redistributable** is required by the Flutter Windows engine and is not bundled by `flutter build windows` automatically. Most Windows 10/11 PCs already have it (a great deal of other software depends on it), but if the executable fails to launch on an unfamiliar PC with a missing-DLL error, that is almost always why — copying `vcruntime140.dll`, `vcruntime140_1.dll`, and `msvcp140.dll` alongside `battery_tracker.exe` resolves it permanently for that portable copy.
+
+Since the executable is not code-signed, Windows SmartScreen will show an "unrecognized publisher" prompt the first time it runs on any given PC (**More info → Run anyway**) — expected, one-time-per-PC friction, not a malfunction.
 
 ## Database code generation
 

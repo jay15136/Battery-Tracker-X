@@ -126,6 +126,8 @@ SQLite stores `ManagedRelativePath` values with forward slashes. They reject dri
 
 Imported files are validated, copied to managed storage, and then committed to the database. Failed database writes remove only newly staged files. Missing photo files are logged and rendered with the record's icon. Custom-icon deletion requires a reference check and an explicit replacement/default strategy.
 
+On Windows, `ExecutableRelativeAppDataDirectoryService` resolves the root to a fixed-name folder (`My Battery Data`) next to the running executable rather than the per-user profile, so a copy of the built application and its data can run as a portable deployment (for example, from a USB drive) and find the same data regardless of which drive letter the host machine assigns the media. Other platforms use `PathProviderAppDataDirectoryService` (the per-user application-support folder), since a writable location beside the binary is not a meaningful concept inside a mobile app bundle. `lib/main.dart` selects the adapter by platform; nothing downstream of `AppDataDirectoryService` needs to know which one is active.
+
 ## Icon system
 
 `IconRegistry` is the centralized, platform-neutral catalog. It combines 54 immutable packaged `IconDefinition` values with active custom-icon records, searches display names/keys/categories/keywords, enforces owner scope, resolves deprecated keys, and supplies distinct Battery, Battery Set, and Device defaults. Built-in assets live under `assets/icons/builtin/`; logical keys, not asset paths, are persisted on inventory owners.

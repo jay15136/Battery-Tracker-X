@@ -1,17 +1,30 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'app/app_bootstrap.dart';
 import 'app/battery_tracker_root.dart';
 import 'core/configuration/app_configuration.dart';
 import 'core/theme/app_theme.dart';
+import 'services/app_data_directory_service.dart';
+import 'services/executable_relative_app_data_directory_service.dart';
 import 'services/path_provider_app_data_directory_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Windows runs as a portable deployment: the executable and its data
+  // ("My Battery Data") travel together, for example on a USB drive. Other
+  // platforms keep the per-user application-support location, since a
+  // writable folder next to the binary is not a meaningful concept inside
+  // an Android/iOS/macOS app bundle.
+  final AppDataDirectoryService appDataDirectoryService = Platform.isWindows
+      ? const ExecutableRelativeAppDataDirectoryService()
+      : const PathProviderAppDataDirectoryService();
+
   Future<AppDependencies> bootstrap() => AppBootstrap.start(
         configuration: AppConfiguration.production,
-        appDataDirectoryService: const PathProviderAppDataDirectoryService(),
+        appDataDirectoryService: appDataDirectoryService,
       );
 
   try {
